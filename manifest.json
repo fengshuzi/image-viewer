@@ -1,0 +1,10 @@
+{
+  "id": "obsidian-image-viewer",
+  "name": "Image Viewer",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "A powerful image viewer with gallery view, zoom, slideshow and more",
+  "author": "",
+  "authorUrl": "",
+  "isDesktopOnly": false
+}
