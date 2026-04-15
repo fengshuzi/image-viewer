@@ -38,10 +38,12 @@ export class CropModal extends Modal {
     contentEl.addClass('image-viewer-crop-modal');
 
     // Make modal larger
-    modalEl.style.width = '90vw';
-    modalEl.style.height = '90vh';
-    modalEl.style.maxWidth = '1200px';
-    modalEl.style.maxHeight = '800px';
+    modalEl.setCssProps({
+      'width': '90vw',
+      'height': '90vh',
+      'max-width': '1200px',
+      'max-height': '800px'
+    });
 
     contentEl.createEl('h2', { text: 'Crop Image' });
 

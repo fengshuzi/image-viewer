@@ -1,5 +1,9 @@
 import type { ExifData } from '../types';
 
+interface ExifParseResult extends ExifData {
+  exifIFDOffset?: number;
+}
+
 export class ExifParser {
   static async parse(file: File): Promise<ExifData> {
     return new Promise((resolve) => {
@@ -21,7 +25,7 @@ export class ExifParser {
   }
 
   private static parseExifData(dataView: DataView): ExifData {
-    const result: ExifData = {};
+    const result: ExifParseResult = {};
 
     // Check for JPEG SOI marker
     if (dataView.getUint16(0, false) !== 0xFFD8) {
@@ -46,10 +50,10 @@ export class ExifParser {
           this.parseIFD(dataView, ifd0Offset, littleEndian, result);
 
           // Parse ExifIFD if exists
-          const exifIFDOffset = (result as any).exifIFDOffset;
+          const exifIFDOffset = result.exifIFDOffset;
           if (exifIFDOffset) {
             this.parseExifIFD(dataView, exifIFDOffset, littleEndian, result);
-            delete (result as any).exifIFDOffset;
+            delete result.exifIFDOffset;
           }
         }
         break;
@@ -64,7 +68,7 @@ export class ExifParser {
     dataView: DataView,
     offset: number,
     littleEndian: boolean,
-    result: ExifData & { exifIFDOffset?: number }
+    result: ExifParseResult
   ): void {
     const count = dataView.getUint16(offset, littleEndian);
 
@@ -110,10 +114,11 @@ export class ExifParser {
         case 0x829A: // ExposureTime
           result.exposureTime = this.getRationalValue(dataView, valueOffset, littleEndian);
           break;
-        case 0x829D: // FNumber
+        case 0x829D: { // FNumber
           const fNumber = this.getRationalNumber(dataView, valueOffset, littleEndian);
           if (fNumber) result.fNumber = fNumber;
           break;
+        }
         case 0x8827: // ISOSpeedRatings
           result.iso = dataView.getUint16(valueOffset, littleEndian);
           break;

@@ -162,7 +162,7 @@ var ImageCanvas = class {
     this.imageEl.addEventListener("dblclick", () => this.resetZoom());
     this.imageEl.addEventListener("load", this.onImageLoad.bind(this));
     this.imageEl.addEventListener("error", () => {
-      this.imageEl.style.opacity = "1";
+      this.imageEl.setCssProps({ "opacity": "1" });
       this.imageEl.alt = "Failed to load image";
     });
   }
@@ -170,7 +170,7 @@ var ImageCanvas = class {
     this.settings = settings;
     this.zoomManager.updateSettings(settings);
   }
-  async loadImage(image) {
+  loadImage(image) {
     this.currentImage = image;
     this.rotation = 0;
     this.flipH = false;
@@ -182,7 +182,7 @@ var ImageCanvas = class {
       this.imageEl.alt = image.name;
     });
   }
-  async preload(images) {
+  preload(images) {
     for (const img of images) {
       if (this.preloadCache.has(img.path))
         continue;
@@ -243,7 +243,7 @@ var ImageCanvas = class {
     e.preventDefault();
     this.isDragging = true;
     this.dragStart = { x: e.clientX, y: e.clientY };
-    this.imageEl.style.cursor = "grabbing";
+    this.imageEl.setCssProps({ "cursor": "grabbing" });
   }
   onMouseMove(e) {
     if (!this.isDragging)
@@ -256,7 +256,7 @@ var ImageCanvas = class {
   }
   onMouseUp() {
     this.isDragging = false;
-    this.imageEl.style.cursor = "grab";
+    this.imageEl.setCssProps({ "cursor": "grab" });
   }
   onWheel(e) {
     e.preventDefault();
@@ -655,11 +655,12 @@ var ExifParser = class {
         case 33434:
           result.exposureTime = this.getRationalValue(dataView, valueOffset, littleEndian);
           break;
-        case 33437:
+        case 33437: {
           const fNumber = this.getRationalNumber(dataView, valueOffset, littleEndian);
           if (fNumber)
             result.fNumber = fNumber;
           break;
+        }
         case 34855:
           result.iso = dataView.getUint16(valueOffset, littleEndian);
           break;
@@ -720,7 +721,7 @@ var InfoPanel = class {
     this.app = app;
     this.panelEl = wrapper.createDiv({ cls: "image-viewer-info-panel" });
     const header = this.panelEl.createDiv({ cls: "info-panel-header" });
-    header.createEl("span", { text: "Image Info" });
+    header.createEl("span", { text: "Image info" });
     const closeBtn = header.createEl("button", { cls: "info-panel-close" });
     closeBtn.textContent = "\xD7";
     closeBtn.addEventListener("click", () => this.toggle());
@@ -870,10 +871,12 @@ var CropModal = class extends import_obsidian2.Modal {
   async onOpen() {
     const { contentEl, modalEl } = this;
     contentEl.addClass("image-viewer-crop-modal");
-    modalEl.style.width = "90vw";
-    modalEl.style.height = "90vh";
-    modalEl.style.maxWidth = "1200px";
-    modalEl.style.maxHeight = "800px";
+    modalEl.setCssProps({
+      "width": "90vw",
+      "height": "90vh",
+      "max-width": "1200px",
+      "max-height": "800px"
+    });
     contentEl.createEl("h2", { text: "Crop Image" });
     const canvasContainer = contentEl.createDiv({ cls: "crop-canvas-container" });
     this.canvasEl = canvasContainer.createEl("canvas");
@@ -1221,7 +1224,7 @@ var ImageView = class extends import_obsidian4.ItemView {
     this.galleryVisible = false;
     this.infoPanelVisible = false;
     this.uiVisible = true;
-    this.slideshowInterval = null;
+    this.slideshowTimer = null;
     this.isClosing = false;
     this.plugin = plugin;
     this.settings = plugin.settings;
@@ -1234,7 +1237,7 @@ var ImageView = class extends import_obsidian4.ItemView {
   }
   getDisplayText() {
     const currentImage = this.images[this.currentIndex];
-    return currentImage ? currentImage.name : "Image Viewer";
+    return currentImage ? currentImage.name : "Image viewer";
   }
   getIcon() {
     return "image";
@@ -1254,20 +1257,24 @@ var ImageView = class extends import_obsidian4.ItemView {
     };
     this.canvas.onNavigate = (dir) => {
       if (dir === "prev")
-        this.prev();
+        void this.prev();
       else
-        this.next();
+        void this.next();
     };
     this.createNavArrows();
     this.galleryContainer = this.canvasWrapper.createDiv({ cls: "image-viewer-gallery-strip" });
     this.gallery = new Gallery(this.galleryContainer, this.settings);
     this.gallery.onSelect = (index) => {
-      this.setIndex(index);
+      void this.setIndex(index);
     };
     this.toolbarContainer = this.canvasWrapper.createDiv({ cls: "image-viewer-toolbar-container" });
     this.toolbar = new Toolbar(this.toolbarContainer, this.settings, {
-      onPrev: () => this.prev(),
-      onNext: () => this.next(),
+      onPrev: () => {
+        void this.prev();
+      },
+      onNext: () => {
+        void this.next();
+      },
       onZoomIn: () => {
         var _a;
         return (_a = this.canvas) == null ? void 0 : _a.zoomIn();
@@ -1305,33 +1312,53 @@ var ImageView = class extends import_obsidian4.ItemView {
   }
   createNavArrows() {
     const leftArrow = this.canvasWrapper.createDiv({ cls: "image-viewer-nav-arrow prev" });
-    leftArrow.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
+    leftArrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
     leftArrow.addEventListener("click", (e) => {
       e.stopPropagation();
-      this.prev();
+      void this.prev();
     });
     const rightArrow = this.canvasWrapper.createDiv({ cls: "image-viewer-nav-arrow next" });
-    rightArrow.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+    rightArrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
     rightArrow.addEventListener("click", (e) => {
       e.stopPropagation();
-      this.next();
+      void this.next();
     });
   }
   setupKeyboardHandlers() {
     const { KEYS } = KeyboardManager;
-    this.keyboardManager.register(KEYS.PREV, () => this.prev());
-    this.keyboardManager.register(KEYS.PREV_ALT, () => this.prev());
-    this.keyboardManager.register(KEYS.NEXT, () => this.next());
-    this.keyboardManager.register(KEYS.NEXT_ALT, () => this.next());
-    this.keyboardManager.register(KEYS.FIRST, () => this.setIndex(0));
-    this.keyboardManager.register(KEYS.FIRST_ALT, () => this.setIndex(0));
-    this.keyboardManager.register(KEYS.LAST, () => this.setIndex(this.images.length - 1));
-    this.keyboardManager.register(KEYS.LAST_ALT, () => this.setIndex(this.images.length - 1));
+    this.keyboardManager.register(KEYS.PREV, () => {
+      void this.prev();
+    });
+    this.keyboardManager.register(KEYS.PREV_ALT, () => {
+      void this.prev();
+    });
+    this.keyboardManager.register(KEYS.NEXT, () => {
+      void this.next();
+    });
+    this.keyboardManager.register(KEYS.NEXT_ALT, () => {
+      void this.next();
+    });
+    this.keyboardManager.register(KEYS.FIRST, () => {
+      void this.setIndex(0);
+    });
+    this.keyboardManager.register(KEYS.FIRST_ALT, () => {
+      void this.setIndex(0);
+    });
+    this.keyboardManager.register(KEYS.LAST, () => {
+      void this.setIndex(this.images.length - 1);
+    });
+    this.keyboardManager.register(KEYS.LAST_ALT, () => {
+      void this.setIndex(this.images.length - 1);
+    });
     this.keyboardManager.register(KEYS.TOGGLE_GALLERY, () => this.toggleGallery());
     this.keyboardManager.register(KEYS.TOGGLE_INFO, () => this.toggleInfoPanel());
     this.keyboardManager.register(KEYS.TOGGLE_UI, () => this.toggleUI());
-    this.keyboardManager.register(KEYS.FULLSCREEN, () => this.toggleFullscreen());
-    this.keyboardManager.register(KEYS.FULLSCREEN_ALT, () => this.toggleFullscreen());
+    this.keyboardManager.register(KEYS.FULLSCREEN, () => {
+      void this.toggleFullscreen();
+    });
+    this.keyboardManager.register(KEYS.FULLSCREEN_ALT, () => {
+      void this.toggleFullscreen();
+    });
     this.keyboardManager.register(KEYS.ESCAPE, () => this.handleEscape());
     this.keyboardManager.register(KEYS.ZOOM_IN, () => {
       var _a;
@@ -1366,9 +1393,15 @@ var ImageView = class extends import_obsidian4.ItemView {
       return (_a = this.canvas) == null ? void 0 : _a.flipHorizontal();
     });
     this.keyboardManager.register(KEYS.CROP, () => this.showCrop());
-    this.keyboardManager.register(KEYS.RENAME, () => this.renameFile());
-    this.keyboardManager.register(KEYS.DELETE, () => this.deleteFile());
-    this.keyboardManager.register(KEYS.DELETE_PERMANENT, () => this.deleteFile(true));
+    this.keyboardManager.register(KEYS.RENAME, () => {
+      void this.renameFile();
+    });
+    this.keyboardManager.register(KEYS.DELETE, () => {
+      void this.deleteFile();
+    });
+    this.keyboardManager.register(KEYS.DELETE_PERMANENT, () => {
+      void this.deleteFile(true);
+    });
     this.keyboardManager.register(KEYS.TOGGLE_SLIDESHOW, () => this.toggleSlideshow());
     this.keyboardManager.register(KEYS.TOGGLE_LOOP, () => this.toggleLoop());
     this.keyboardManager.register(KEYS.HELP, () => this.showHelp());
@@ -1397,13 +1430,13 @@ var ImageView = class extends import_obsidian4.ItemView {
     const image = this.images[this.currentIndex];
     if (!image)
       return;
-    await ((_a = this.canvas) == null ? void 0 : _a.loadImage(image));
+    (_a = this.canvas) == null ? void 0 : _a.loadImage(image);
     (_b = this.toolbar) == null ? void 0 : _b.setCounter(this.currentIndex + 1, this.images.length);
     this.updateInfoBar();
     this.updateTitle();
     this.preloadAdjacentImages();
     if (this.infoPanelVisible) {
-      this.updateInfoPanel();
+      void this.updateInfoPanel();
     }
   }
   preloadAdjacentImages() {
@@ -1481,7 +1514,7 @@ var ImageView = class extends import_obsidian4.ItemView {
     this.infoPanelVisible = !this.infoPanelVisible;
     (_a = this.infoPanel) == null ? void 0 : _a.toggle();
     if (this.infoPanelVisible) {
-      this.updateInfoPanel();
+      void this.updateInfoPanel();
     }
     setTimeout(() => {
       var _a2;
@@ -1504,7 +1537,7 @@ var ImageView = class extends import_obsidian4.ItemView {
   handleEscape() {
     var _a;
     if (document.fullscreenElement) {
-      document.exitFullscreen();
+      void document.exitFullscreen();
     } else if (this.infoPanelVisible) {
       this.toggleInfoPanel();
     } else if ((_a = this.canvas) == null ? void 0 : _a.isZoomed()) {
@@ -1521,12 +1554,12 @@ var ImageView = class extends import_obsidian4.ItemView {
       return;
     const modal = new CropModal(this.app, image);
     modal.onCrop = (result) => {
-      console.log("Crop result:", result);
+      console.debug("Crop result:", result);
     };
     modal.open();
   }
   toggleSlideshow() {
-    if (this.slideshowInterval) {
+    if (this.slideshowTimer) {
       this.stopSlideshow();
     } else {
       this.startSlideshow();
@@ -1534,16 +1567,16 @@ var ImageView = class extends import_obsidian4.ItemView {
   }
   startSlideshow() {
     var _a;
-    this.slideshowInterval = setInterval(() => {
+    this.slideshowTimer = setInterval(() => {
       if (this.settings.slideshowRandom) {
         const randomIndex = Math.floor(Math.random() * this.images.length);
-        this.setIndex(randomIndex);
+        void this.setIndex(randomIndex);
       } else {
         if (this.currentIndex === this.images.length - 1 && !this.settings.slideshowLoop) {
           this.stopSlideshow();
           return;
         }
-        this.next();
+        void this.next();
       }
     }, this.settings.slideshowInterval * 1e3);
     (_a = this.toolbar) == null ? void 0 : _a.setSlideshowPlaying(true);
@@ -1551,34 +1584,35 @@ var ImageView = class extends import_obsidian4.ItemView {
   }
   stopSlideshow() {
     var _a;
-    if (this.slideshowInterval) {
-      clearInterval(this.slideshowInterval);
-      this.slideshowInterval = null;
+    if (this.slideshowTimer) {
+      clearInterval(this.slideshowTimer);
+      this.slideshowTimer = null;
     }
     (_a = this.toolbar) == null ? void 0 : _a.setSlideshowPlaying(false);
     new import_obsidian4.Notice("Slideshow stopped");
   }
   toggleLoop() {
     this.settings.loopImages = !this.settings.loopImages;
-    this.plugin.saveSettings();
+    void this.plugin.saveSettings();
     new import_obsidian4.Notice(`Loop: ${this.settings.loopImages ? "On" : "Off"}`);
   }
   cycleBackground() {
     const colors = ["#1a1a1a", "#2d2d2d", "#000000", "#ffffff"];
-    const currentIndex = colors.indexOf(this.settings.backgroundColor);
-    const nextIndex = (currentIndex + 1) % colors.length;
+    const currentBgIndex = colors.indexOf(this.settings.backgroundColor);
+    const nextIndex = (currentBgIndex + 1) % colors.length;
     this.settings.backgroundColor = colors[nextIndex];
-    this.plugin.saveSettings();
+    void this.plugin.saveSettings();
     this.applyTheme();
   }
   async renameFile() {
+    var _a;
     const image = this.images[this.currentIndex];
     if (!image)
       return;
     const baseName = image.name.replace(/\.[^.]+$/, "");
     const newBaseName = await new Promise((resolve) => {
       const modal = new import_obsidian4.Modal(this.app);
-      modal.titleEl.setText("Rename File");
+      modal.titleEl.setText("Rename file");
       let inputEl;
       new import_obsidian4.Setting(modal.contentEl).setName("New name").setDesc(`Extension .${image.extension} will be kept`).addText((text) => {
         text.setValue(baseName);
@@ -1598,10 +1632,12 @@ var ImageView = class extends import_obsidian4.ItemView {
       modal.open();
     });
     if (newBaseName && newBaseName !== baseName) {
-      const newPath = image.file.parent.path + "/" + newBaseName + "." + image.extension;
-      await this.app.fileManager.renameFile(image.file, newPath);
-      new import_obsidian4.Notice("File renamed");
-      await this.loadFolder(this.currentFolder, newPath);
+      const newPath = ((_a = image.file.parent) == null ? void 0 : _a.path) + "/" + newBaseName + "." + image.extension;
+      if (newPath) {
+        await this.app.fileManager.renameFile(image.file, newPath);
+        new import_obsidian4.Notice("File renamed");
+        await this.loadFolder(this.currentFolder, newPath);
+      }
     }
   }
   async deleteFile(permanent = false) {
@@ -1611,14 +1647,14 @@ var ImageView = class extends import_obsidian4.ItemView {
       return;
     const confirmed = await new Promise((resolve) => {
       const modal = new import_obsidian4.Modal(this.app);
-      modal.titleEl.setText(permanent ? "Permanently Delete?" : "Move to Trash?");
+      modal.titleEl.setText(permanent ? "Permanently delete?" : "Move to trash?");
       const msg = permanent ? `"${image.name}" will be permanently deleted. This cannot be undone.` : `"${image.name}" will be moved to trash.`;
       modal.contentEl.createEl("p", { text: msg });
       new import_obsidian4.Setting(modal.contentEl).addButton((btn) => btn.setButtonText("Cancel").onClick(() => {
         modal.close();
         resolve(false);
       })).addButton((btn) => {
-        btn.setButtonText(permanent ? "Delete" : "Move to Trash");
+        btn.setButtonText(permanent ? "Delete" : "Move to trash");
         if (permanent)
           btn.setWarning();
         else
@@ -1636,7 +1672,7 @@ var ImageView = class extends import_obsidian4.ItemView {
       await this.app.vault.delete(image.file);
       new import_obsidian4.Notice("File permanently deleted");
     } else {
-      await this.app.vault.trash(image.file, false);
+      await this.app.fileManager.trashFile(image.file);
       new import_obsidian4.Notice("File moved to trash");
     }
     this.images.splice(this.currentIndex, 1);
@@ -1657,7 +1693,7 @@ var ImageView = class extends import_obsidian4.ItemView {
   }
   showHelp() {
     const modal = new import_obsidian4.Modal(this.app);
-    modal.titleEl.setText("Keyboard Shortcuts");
+    modal.titleEl.setText("Keyboard shortcuts");
     const content = modal.contentEl.createDiv({ cls: "image-viewer-help" });
     const shortcuts = [
       ["Navigation", ""],
@@ -1787,89 +1823,89 @@ var ImageViewerSettingTab = class extends import_obsidian5.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Image Viewer Settings" });
-    containerEl.createEl("h3", { text: "Display" });
+    new import_obsidian5.Setting(containerEl).setName("Image viewer settings").setHeading();
+    new import_obsidian5.Setting(containerEl).setName("Display").setHeading();
     new import_obsidian5.Setting(containerEl).setName("Theme").setDesc("Color theme for the viewer").addDropdown((dropdown) => dropdown.addOption("dark", "Dark").addOption("light", "Light").addOption("system", "System").setValue(this.plugin.settings.theme).onChange(async (value) => {
       this.plugin.settings.theme = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Background Color").setDesc("Custom background color (hex)").addText((text) => text.setValue(this.plugin.settings.backgroundColor).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Background color").setDesc("Custom background color (hex)").addText((text) => text.setValue(this.plugin.settings.backgroundColor).onChange(async (value) => {
       this.plugin.settings.backgroundColor = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Show Toolbar").setDesc("Display the toolbar by default").addToggle((toggle) => toggle.setValue(this.plugin.settings.showToolbar).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Show toolbar").setDesc("Display the toolbar by default").addToggle((toggle) => toggle.setValue(this.plugin.settings.showToolbar).onChange(async (value) => {
       this.plugin.settings.showToolbar = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Show File Path").setDesc("Display file path in the viewer").addToggle((toggle) => toggle.setValue(this.plugin.settings.showFilePath).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Show file path").setDesc("Display file path in the viewer").addToggle((toggle) => toggle.setValue(this.plugin.settings.showFilePath).onChange(async (value) => {
       this.plugin.settings.showFilePath = value;
       await this.plugin.saveSettings();
     }));
-    containerEl.createEl("h3", { text: "Gallery" });
-    new import_obsidian5.Setting(containerEl).setName("Thumbnail Size").setDesc("Size of thumbnails in pixels").addSlider((slider) => slider.setLimits(60, 200, 10).setValue(this.plugin.settings.thumbnailSize).setDynamicTooltip().onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Gallery").setHeading();
+    new import_obsidian5.Setting(containerEl).setName("Thumbnail size").setDesc("Size of thumbnails in pixels").addSlider((slider) => slider.setLimits(60, 200, 10).setValue(this.plugin.settings.thumbnailSize).setDynamicTooltip().onChange(async (value) => {
       this.plugin.settings.thumbnailSize = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Gallery Columns").setDesc("Number of columns in gallery view").addSlider((slider) => slider.setLimits(3, 12, 1).setValue(this.plugin.settings.galleryColumns).setDynamicTooltip().onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Gallery columns").setDesc("Number of columns in gallery view").addSlider((slider) => slider.setLimits(3, 12, 1).setValue(this.plugin.settings.galleryColumns).setDynamicTooltip().onChange(async (value) => {
       this.plugin.settings.galleryColumns = value;
       await this.plugin.saveSettings();
     }));
-    containerEl.createEl("h3", { text: "Navigation" });
-    new import_obsidian5.Setting(containerEl).setName("Scroll Behavior").setDesc("Mouse wheel behavior").addDropdown((dropdown) => dropdown.addOption("navigate", "Navigate between images").addOption("scroll", "Scroll zoomed image").setValue(this.plugin.settings.scrollBehavior).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Navigation").setHeading();
+    new import_obsidian5.Setting(containerEl).setName("Scroll behavior").setDesc("Mouse wheel behavior").addDropdown((dropdown) => dropdown.addOption("navigate", "Navigate between images").addOption("scroll", "Scroll zoomed image").setValue(this.plugin.settings.scrollBehavior).onChange(async (value) => {
       this.plugin.settings.scrollBehavior = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Loop Images").setDesc("Loop back to first image after last").addToggle((toggle) => toggle.setValue(this.plugin.settings.loopImages).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Loop images").setDesc("Loop back to first image after last").addToggle((toggle) => toggle.setValue(this.plugin.settings.loopImages).onChange(async (value) => {
       this.plugin.settings.loopImages = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Sort By").setDesc("Sort images by").addDropdown((dropdown) => dropdown.addOption("name", "Name").addOption("date", "Date").addOption("size", "Size").addOption("random", "Random").setValue(this.plugin.settings.sortBy).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Sort by").setDesc("Sort images by").addDropdown((dropdown) => dropdown.addOption("name", "Name").addOption("date", "Date").addOption("size", "Size").addOption("random", "Random").setValue(this.plugin.settings.sortBy).onChange(async (value) => {
       this.plugin.settings.sortBy = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Sort Ascending").setDesc("Sort in ascending order").addToggle((toggle) => toggle.setValue(this.plugin.settings.sortAscending).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Sort ascending").setDesc("Sort in ascending order").addToggle((toggle) => toggle.setValue(this.plugin.settings.sortAscending).onChange(async (value) => {
       this.plugin.settings.sortAscending = value;
       await this.plugin.saveSettings();
     }));
-    containerEl.createEl("h3", { text: "Slideshow" });
-    new import_obsidian5.Setting(containerEl).setName("Slideshow Interval").setDesc("Time between slides (seconds)").addSlider((slider) => slider.setLimits(1, 30, 1).setValue(this.plugin.settings.slideshowInterval).setDynamicTooltip().onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Slideshow").setHeading();
+    new import_obsidian5.Setting(containerEl).setName("Slideshow interval").setDesc("Time between slides (seconds)").addSlider((slider) => slider.setLimits(1, 30, 1).setValue(this.plugin.settings.slideshowInterval).setDynamicTooltip().onChange(async (value) => {
       this.plugin.settings.slideshowInterval = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Loop Slideshow").setDesc("Loop slideshow playback").addToggle((toggle) => toggle.setValue(this.plugin.settings.slideshowLoop).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Loop slideshow").setDesc("Loop slideshow playback").addToggle((toggle) => toggle.setValue(this.plugin.settings.slideshowLoop).onChange(async (value) => {
       this.plugin.settings.slideshowLoop = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Random Order").setDesc("Play slideshow in random order").addToggle((toggle) => toggle.setValue(this.plugin.settings.slideshowRandom).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Random order").setDesc("Play slideshow in random order").addToggle((toggle) => toggle.setValue(this.plugin.settings.slideshowRandom).onChange(async (value) => {
       this.plugin.settings.slideshowRandom = value;
       await this.plugin.saveSettings();
     }));
-    containerEl.createEl("h3", { text: "Zoom" });
-    new import_obsidian5.Setting(containerEl).setName("Zoom Step").setDesc("Zoom increment step").addSlider((slider) => slider.setLimits(0.1, 0.5, 0.05).setValue(this.plugin.settings.zoomStep).setDynamicTooltip().onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Zoom").setHeading();
+    new import_obsidian5.Setting(containerEl).setName("Zoom step").setDesc("Zoom increment step").addSlider((slider) => slider.setLimits(0.1, 0.5, 0.05).setValue(this.plugin.settings.zoomStep).setDynamicTooltip().onChange(async (value) => {
       this.plugin.settings.zoomStep = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Default Zoom Mode").setDesc("How images fit initially").addDropdown((dropdown) => dropdown.addOption("fit", "Fit to window").addOption("fill", "Fill window").addOption("actual", "Actual size").setValue(this.plugin.settings.defaultZoomMode).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Default zoom mode").setDesc("How images fit initially").addDropdown((dropdown) => dropdown.addOption("fit", "Fit to window").addOption("fill", "Fill window").addOption("actual", "Actual size").setValue(this.plugin.settings.defaultZoomMode).onChange(async (value) => {
       this.plugin.settings.defaultZoomMode = value;
       await this.plugin.saveSettings();
     }));
-    containerEl.createEl("h3", { text: "Folders" });
-    new import_obsidian5.Setting(containerEl).setName("Default Folder").setDesc("Default folder to open").addText((text) => text.setPlaceholder("assets").setValue(this.plugin.settings.defaultFolder).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Folders").setHeading();
+    new import_obsidian5.Setting(containerEl).setName("Default folder").setDesc("Default folder to open").addText((text) => text.setPlaceholder("assets").setValue(this.plugin.settings.defaultFolder).onChange(async (value) => {
       this.plugin.settings.defaultFolder = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Scan Subfolders").setDesc("Include images from subfolders").addToggle((toggle) => toggle.setValue(this.plugin.settings.scanSubfolders).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Scan subfolders").setDesc("Include images from subfolders").addToggle((toggle) => toggle.setValue(this.plugin.settings.scanSubfolders).onChange(async (value) => {
       this.plugin.settings.scanSubfolders = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Reset to Defaults").setDesc("Reset all settings to default values").addButton((button) => button.setButtonText("Reset").setWarning().onClick(async () => {
+    new import_obsidian5.Setting(containerEl).setName("Reset to defaults").setDesc("Reset all settings to default values").addButton((button) => button.setButtonText("Reset").setWarning().onClick(async () => {
       this.plugin.settings = { ...DEFAULT_SETTINGS };
       await this.plugin.saveSettings();
       this.display();
     }));
     const donateSection = containerEl.createDiv({ cls: "plugin-donate-section" });
-    donateSection.createEl("h3", { text: "\u2615 \u8BF7\u4F5C\u8005\u559D\u676F\u5496\u5561" });
-    donateSection.createEl("p", { text: "\u5982\u679C\u8FD9\u4E2A\u63D2\u4EF6\u5E2E\u52A9\u4E86\u4F60\uFF0C\u6B22\u8FCE\u8BF7\u4F5C\u8005\u559D\u676F\u5496\u5561 \u2615", cls: "plugin-donate-desc" });
+    new import_obsidian5.Setting(donateSection).setName("Support the developer").setHeading();
+    donateSection.createEl("p", { text: "\u5982\u679C\u8FD9\u4E2A\u63D2\u4EF6\u5E2E\u52A9\u4E86\u4F60\uFF0C\u6B22\u8FCE\u8BF7\u4F5C\u8005\u559D\u676F\u5496\u5561", cls: "plugin-donate-desc" });
     const imgWrap = donateSection.createDiv({ cls: "plugin-donate-qr" });
     imgWrap.createEl("img", { attr: { src: this.plugin.app.vault.adapter.getResourcePath(`${this.plugin.manifest.dir}/assets/wechat-donate.jpg`), alt: "\u5FAE\u4FE1\u6253\u8D4F", width: "160" } });
     imgWrap.createEl("p", { text: "\u5FAE\u4FE1\u626B\u7801", cls: "plugin-donate-label" });
@@ -1878,28 +1914,27 @@ var ImageViewerSettingTab = class extends import_obsidian5.PluginSettingTab {
 
 // main.ts
 var ImageViewerPlugin = class extends import_obsidian6.Plugin {
-  constructor() {
-    super(...arguments);
-    this.view = null;
-  }
   async onload() {
     await this.loadSettings();
     this.registerView(VIEW_TYPE_IMAGE_VIEWER, (leaf) => {
-      this.view = new ImageView(leaf, this);
-      return this.view;
+      return new ImageView(leaf, this);
     });
-    this.addRibbonIcon("image", "Image Viewer", () => {
-      this.openImageViewer(this.settings.defaultFolder);
+    this.addRibbonIcon("image", "Open image viewer", () => {
+      void this.openImageViewer(this.settings.defaultFolder);
     });
     this.addCommand({
-      id: "open-image-viewer",
-      name: "Open Image Viewer",
-      callback: () => this.openImageViewer(this.settings.defaultFolder)
+      id: "open",
+      name: "Open",
+      callback: () => {
+        void this.openImageViewer(this.settings.defaultFolder);
+      }
     });
     this.addCommand({
       id: "open-folder",
       name: "Open folder...",
-      callback: () => this.showFolderPicker()
+      callback: () => {
+        void this.showFolderPicker();
+      }
     });
     this.addCommand({
       id: "open-current-folder",
@@ -1908,7 +1943,7 @@ var ImageViewerPlugin = class extends import_obsidian6.Plugin {
         const file = this.app.workspace.getActiveFile();
         if (file && file.parent) {
           if (!checking) {
-            this.openImageViewer(file.parent.path);
+            void this.openImageViewer(file.parent.path);
           }
           return true;
         }
@@ -1919,11 +1954,15 @@ var ImageViewerPlugin = class extends import_obsidian6.Plugin {
       this.app.workspace.on("file-menu", (menu, file) => {
         if (file instanceof import_obsidian6.TFolder) {
           menu.addItem((item) => {
-            item.setTitle("Open in Image Viewer").setIcon("image").onClick(() => this.openImageViewer(file.path));
+            item.setTitle("Open in image viewer").setIcon("image").onClick(() => {
+              void this.openImageViewer(file.path);
+            });
           });
         } else if (file instanceof import_obsidian6.TFile && this.isImageFile(file) && file.parent) {
           menu.addItem((item) => {
-            item.setTitle("Open in Image Viewer").setIcon("image").onClick(() => this.openImageViewer(file.parent.path, file.path));
+            item.setTitle("Open in image viewer").setIcon("image").onClick(() => {
+              void this.openImageViewer(file.parent.path, file.path);
+            });
           });
         }
       })
@@ -1935,8 +1974,10 @@ var ImageViewerPlugin = class extends import_obsidian6.Plugin {
   }
   async saveSettings() {
     await this.saveData(this.settings);
-    if (this.view) {
-      this.view.updateSettings(this.settings);
+    for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_IMAGE_VIEWER)) {
+      if (leaf.view instanceof ImageView) {
+        leaf.view.updateSettings(this.settings);
+      }
     }
   }
   isImageFile(file) {
@@ -1949,23 +1990,20 @@ var ImageViewerPlugin = class extends import_obsidian6.Plugin {
       new import_obsidian6.Notice(`Folder not found: ${folderPath}`);
       return;
     }
-    const existingLeaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_IMAGE_VIEWER);
-    if (existingLeaf.length > 0) {
-      existingLeaf[0].detach();
-    }
     const leaf = this.app.workspace.getLeaf("tab");
     await leaf.setViewState({
       type: VIEW_TYPE_IMAGE_VIEWER,
       active: true
     });
     const view = leaf.view;
-    await view.loadFolder(folderPath, initialImage);
-    this.view = view;
+    if (view instanceof ImageView) {
+      await view.loadFolder(folderPath, initialImage);
+    }
   }
-  async showFolderPicker() {
+  showFolderPicker() {
     const folders = this.getAllFolders(this.app.vault.getRoot());
     const modal = new FolderSuggestModal(this.app, folders, (folder) => {
-      this.openImageViewer(folder.path);
+      void this.openImageViewer(folder.path);
     });
     modal.open();
   }
@@ -1979,8 +2017,6 @@ var ImageViewerPlugin = class extends import_obsidian6.Plugin {
     return folders;
   }
   onunload() {
-    this.view = null;
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_IMAGE_VIEWER);
   }
 };
 var FolderSuggestModal = class extends import_obsidian6.FuzzySuggestModal {

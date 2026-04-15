@@ -1,5 +1,7 @@
 // Type definitions for Image Viewer plugin
 
+import type { TFile } from 'obsidian';
+
 export interface ImageViewerSettings {
   // Display settings
   theme: 'light' | 'dark' | 'system';
@@ -64,7 +66,7 @@ export const DEFAULT_SETTINGS: ImageViewerSettings = {
 };
 
 export interface ImageFile {
-  file: any; // TFile from Obsidian
+  file: TFile;
   path: string;
   name: string;
   extension: string;
@@ -92,4 +94,3 @@ export interface ZoomState {
   translateX: number;
   translateY: number;
 }
-

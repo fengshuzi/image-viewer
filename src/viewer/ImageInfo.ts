@@ -1,4 +1,4 @@
-import { App, Modal, Setting } from 'obsidian';
+import { App, Modal } from 'obsidian';
 import type { ImageFile, ExifData } from '../types';
 import { ExifParser } from '../utils/exif';
 
@@ -21,21 +21,21 @@ export class ImageInfoModal extends Modal {
     const { contentEl } = this;
     contentEl.addClass('image-viewer-info-modal');
 
-    contentEl.createEl('h2', { text: 'Image Information' });
+    contentEl.createEl('h2', { text: 'Image information' });
 
     // File Information
-    contentEl.createEl('h3', { text: '📁 File Information' });
-    this.addInfoRow(contentEl, 'File Name', this.image.name);
+    contentEl.createEl('h3', { text: 'File information' });
+    this.addInfoRow(contentEl, 'File name', this.image.name);
     this.addInfoRow(contentEl, 'Path', this.image.path);
     this.addInfoRow(contentEl, 'Size', this.formatSize(this.image.size));
     this.addInfoRow(contentEl, 'Created', this.formatDate(this.image.ctime));
     this.addInfoRow(contentEl, 'Modified', this.formatDate(this.image.mtime));
 
     // Dimension Information
-    contentEl.createEl('h3', { text: '📐 Dimensions' });
+    contentEl.createEl('h3', { text: 'Dimensions' });
     this.addInfoRow(contentEl, 'Resolution', `${this.dimensions.width} × ${this.dimensions.height}`);
     this.addInfoRow(contentEl, 'Megapixels', this.calculateMegapixels());
-    this.addInfoRow(contentEl, 'Print Size (300dpi)', this.calculatePrintSize());
+    this.addInfoRow(contentEl, 'Print size (300dpi)', this.calculatePrintSize());
 
     // Try to load EXIF data
     await this.loadExifData(contentEl);
@@ -78,39 +78,39 @@ export class ImageInfoModal extends Modal {
       this.exifData = await ExifParser.parse(fileObj);
 
       if (this.hasExifData()) {
-        container.createEl('h3', { text: '📷 EXIF Information' });
+        container.createEl('h3', { text: 'EXIF information' });
 
-        if (this.exifData!.make || this.exifData!.model) {
+        if (this.exifData.make || this.exifData.model) {
           this.addInfoRow(container, 'Camera',
-            `${this.exifData!.make || ''} ${this.exifData!.model || ''}`.trim());
+            `${this.exifData.make || ''} ${this.exifData.model || ''}`.trim());
         }
 
-        if (this.exifData!.exposureTime) {
-          this.addInfoRow(container, 'Shutter Speed', this.exifData!.exposureTime + 's');
+        if (this.exifData.exposureTime) {
+          this.addInfoRow(container, 'Shutter speed', this.exifData.exposureTime + 's');
         }
 
-        if (this.exifData!.fNumber) {
-          this.addInfoRow(container, 'Aperture', 'f/' + this.exifData!.fNumber.toFixed(1));
+        if (this.exifData.fNumber) {
+          this.addInfoRow(container, 'Aperture', 'f/' + this.exifData.fNumber.toFixed(1));
         }
 
-        if (this.exifData!.iso) {
-          this.addInfoRow(container, 'ISO', this.exifData!.iso.toString());
+        if (this.exifData.iso) {
+          this.addInfoRow(container, 'ISO', this.exifData.iso.toString());
         }
 
-        if (this.exifData!.focalLength) {
-          this.addInfoRow(container, 'Focal Length', this.exifData!.focalLength + 'mm');
+        if (this.exifData.focalLength) {
+          this.addInfoRow(container, 'Focal length', this.exifData.focalLength + 'mm');
         }
 
-        if (this.exifData!.dateTime) {
-          this.addInfoRow(container, 'Date Taken', this.formatExifDate(this.exifData!.dateTime));
+        if (this.exifData.dateTime) {
+          this.addInfoRow(container, 'Date taken', this.formatExifDate(this.exifData.dateTime));
         }
 
-        if (this.exifData!.gpsLatitude && this.exifData!.gpsLongitude) {
+        if (this.exifData.gpsLatitude && this.exifData.gpsLongitude) {
           const locationLink = container.createDiv({ cls: 'image-viewer-info-row' });
           locationLink.createDiv({ cls: 'image-viewer-info-label', text: 'Location:' });
           const link = locationLink.createDiv({ cls: 'image-viewer-info-value' })
-            .createEl('a', { text: 'View on Map' });
-          link.href = `https://maps.google.com/?q=${this.exifData!.gpsLatitude},${this.exifData!.gpsLongitude}`;
+            .createEl('a', { text: 'View on map' });
+          link.href = `https://maps.google.com/?q=${this.exifData.gpsLatitude},${this.exifData.gpsLongitude}`;
           link.target = '_blank';
         }
       }

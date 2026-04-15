@@ -1,37 +1,35 @@
-import { Plugin, TFolder, TFile, Notice, FuzzySuggestModal } from 'obsidian';
+import { Plugin, TFolder, TFile, Notice, FuzzySuggestModal, App } from 'obsidian';
 import { ImageView, VIEW_TYPE_IMAGE_VIEWER } from './src/viewer/ImageView';
 import { ImageViewerSettingTab } from './src/settings';
 import { DEFAULT_SETTINGS, type ImageViewerSettings } from './src/types';
 
 export default class ImageViewerPlugin extends Plugin {
   settings: ImageViewerSettings;
-  private view: ImageView | null = null;
 
   async onload(): Promise<void> {
     await this.loadSettings();
 
     // Register view
     this.registerView(VIEW_TYPE_IMAGE_VIEWER, (leaf) => {
-      this.view = new ImageView(leaf, this);
-      return this.view;
+      return new ImageView(leaf, this) as unknown as import('obsidian').View;
     });
 
     // Ribbon icon
-    this.addRibbonIcon('image', 'Image Viewer', () => {
-      this.openImageViewer(this.settings.defaultFolder);
+    this.addRibbonIcon('image', 'Open image viewer', () => {
+      void this.openImageViewer(this.settings.defaultFolder);
     });
 
     // Commands
     this.addCommand({
-      id: 'open-image-viewer',
-      name: 'Open Image Viewer',
-      callback: () => this.openImageViewer(this.settings.defaultFolder)
+      id: 'open',
+      name: 'Open',
+      callback: () => { void this.openImageViewer(this.settings.defaultFolder); }
     });
 
     this.addCommand({
       id: 'open-folder',
       name: 'Open folder...',
-      callback: () => this.showFolderPicker()
+      callback: () => { void this.showFolderPicker(); }
     });
 
     this.addCommand({
@@ -41,7 +39,7 @@ export default class ImageViewerPlugin extends Plugin {
         const file = this.app.workspace.getActiveFile();
         if (file && file.parent) {
           if (!checking) {
-            this.openImageViewer(file.parent.path);
+            void this.openImageViewer(file.parent.path);
           }
           return true;
         }
@@ -55,16 +53,16 @@ export default class ImageViewerPlugin extends Plugin {
         if (file instanceof TFolder) {
           menu.addItem((item) => {
             item
-              .setTitle('Open in Image Viewer')
+              .setTitle('Open in image viewer')
               .setIcon('image')
-              .onClick(() => this.openImageViewer(file.path));
+              .onClick(() => { void this.openImageViewer(file.path); });
           });
         } else if (file instanceof TFile && this.isImageFile(file) && file.parent) {
           menu.addItem((item) => {
             item
-              .setTitle('Open in Image Viewer')
+              .setTitle('Open in image viewer')
               .setIcon('image')
-              .onClick(() => this.openImageViewer(file.parent!.path, file.path));
+              .onClick(() => { void this.openImageViewer(file.parent!.path, file.path); });
           });
         }
       })
@@ -80,8 +78,10 @@ export default class ImageViewerPlugin extends Plugin {
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings);
-    if (this.view) {
-      this.view.updateSettings(this.settings);
+    for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_IMAGE_VIEWER)) {
+      if (leaf.view instanceof ImageView) {
+        leaf.view.updateSettings(this.settings);
+      }
     }
   }
 
@@ -98,12 +98,6 @@ export default class ImageViewerPlugin extends Plugin {
       return;
     }
 
-    // Detach existing view if any
-    const existingLeaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_IMAGE_VIEWER);
-    if (existingLeaf.length > 0) {
-      existingLeaf[0].detach();
-    }
-
     // Create new view
     const leaf = this.app.workspace.getLeaf('tab');
     await leaf.setViewState({
@@ -112,16 +106,17 @@ export default class ImageViewerPlugin extends Plugin {
     });
 
     // Get view from leaf and load folder
-    const view = leaf.view as ImageView;
-    await view.loadFolder(folderPath, initialImage);
-    this.view = view;
+    const view = leaf.view;
+    if (view instanceof ImageView) {
+      await view.loadFolder(folderPath, initialImage);
+    }
   }
 
-  async showFolderPicker(): Promise<void> {
+  showFolderPicker(): void {
     const folders = this.getAllFolders(this.app.vault.getRoot());
 
     const modal = new FolderSuggestModal(this.app, folders, (folder) => {
-      this.openImageViewer(folder.path);
+      void this.openImageViewer(folder.path);
     });
     modal.open();
   }
@@ -137,8 +132,7 @@ export default class ImageViewerPlugin extends Plugin {
   }
 
   onunload(): void {
-    this.view = null;
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_IMAGE_VIEWER);
+    // Do not detach leaves in onunload
   }
 }
 
@@ -146,7 +140,7 @@ class FolderSuggestModal extends FuzzySuggestModal<TFolder> {
   private folders: TFolder[];
   private onChoose: (folder: TFolder) => void;
 
-  constructor(app: any, folders: TFolder[], onChoose: (folder: TFolder) => void) {
+  constructor(app: App, folders: TFolder[], onChoose: (folder: TFolder) => void) {
     super(app);
     this.folders = folders;
     this.onChoose = onChoose;

@@ -1,4 +1,3 @@
-import { TFile } from 'obsidian';
 import type { ImageFile, ImageViewerSettings, ZoomState } from '../types';
 import { ZoomManager } from '../utils/zoom';
 
@@ -50,7 +49,7 @@ export class ImageCanvas {
     this.imageEl.addEventListener('load', this.onImageLoad.bind(this));
 
     this.imageEl.addEventListener('error', () => {
-      this.imageEl.style.opacity = '1';
+      this.imageEl.setCssProps({ 'opacity': '1' });
       this.imageEl.alt = 'Failed to load image';
     });
   }
@@ -60,7 +59,7 @@ export class ImageCanvas {
     this.zoomManager.updateSettings(settings);
   }
 
-  async loadImage(image: ImageFile): Promise<void> {
+  loadImage(image: ImageFile): void {
     this.currentImage = image;
     this.rotation = 0;
     this.flipH = false;
@@ -76,7 +75,7 @@ export class ImageCanvas {
     });
   }
 
-  async preload(images: ImageFile[]): Promise<void> {
+  preload(images: ImageFile[]): void {
     for (const img of images) {
       if (this.preloadCache.has(img.path)) continue;
       const url = img.file.vault.getResourcePath(img.file);
@@ -143,7 +142,7 @@ export class ImageCanvas {
 
     this.isDragging = true;
     this.dragStart = { x: e.clientX, y: e.clientY };
-    this.imageEl.style.cursor = 'grabbing';
+    this.imageEl.setCssProps({ 'cursor': 'grabbing' });
   }
 
   private onMouseMove(e: MouseEvent): void {
@@ -159,7 +158,7 @@ export class ImageCanvas {
 
   private onMouseUp(): void {
     this.isDragging = false;
-    this.imageEl.style.cursor = 'grab';
+    this.imageEl.setCssProps({ 'cursor': 'grab' });
   }
 
   private onWheel(e: WheelEvent): void {

@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Menu, Notice, Modal, Setting, setIcon } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, Modal, Setting, setIcon } from 'obsidian';
 import type { ImageFile, ImageViewerSettings } from '../types';
 import { ImageCanvas } from './ImageCanvas';
 import { Gallery } from './Gallery';
@@ -26,7 +26,7 @@ export class ImageView extends ItemView {
   private galleryVisible: boolean = false;
   private infoPanelVisible: boolean = false;
   private uiVisible: boolean = true;
-  private slideshowInterval: NodeJS.Timeout | null = null;
+  private slideshowTimer: ReturnType<typeof setInterval> | null = null;
   private isClosing: boolean = false;
 
   private mainContainer: HTMLElement;
@@ -55,7 +55,7 @@ export class ImageView extends ItemView {
 
   getDisplayText(): string {
     const currentImage = this.images[this.currentIndex];
-    return currentImage ? currentImage.name : 'Image Viewer';
+    return currentImage ? currentImage.name : 'Image viewer';
   }
 
   getIcon(): string {
@@ -78,8 +78,8 @@ export class ImageView extends ItemView {
       this.toolbar?.setZoom(scale);
     };
     this.canvas.onNavigate = (dir) => {
-      if (dir === 'prev') this.prev();
-      else this.next();
+      if (dir === 'prev') void this.prev();
+      else void this.next();
     };
 
     this.createNavArrows();
@@ -87,13 +87,13 @@ export class ImageView extends ItemView {
     this.galleryContainer = this.canvasWrapper.createDiv({ cls: 'image-viewer-gallery-strip' });
     this.gallery = new Gallery(this.galleryContainer, this.settings);
     this.gallery.onSelect = (index) => {
-      this.setIndex(index);
+      void this.setIndex(index);
     };
 
     this.toolbarContainer = this.canvasWrapper.createDiv({ cls: 'image-viewer-toolbar-container' });
     this.toolbar = new Toolbar(this.toolbarContainer, this.settings, {
-      onPrev: () => this.prev(),
-      onNext: () => this.next(),
+      onPrev: () => { void this.prev(); },
+      onNext: () => { void this.next(); },
       onZoomIn: () => this.canvas?.zoomIn(),
       onZoomOut: () => this.canvas?.zoomOut(),
       onResetZoom: () => this.canvas?.resetZoom(),
@@ -122,17 +122,17 @@ export class ImageView extends ItemView {
 
   private createNavArrows(): void {
     const leftArrow = this.canvasWrapper.createDiv({ cls: 'image-viewer-nav-arrow prev' });
-    leftArrow.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
+    leftArrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
     leftArrow.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.prev();
+      void this.prev();
     });
 
     const rightArrow = this.canvasWrapper.createDiv({ cls: 'image-viewer-nav-arrow next' });
-    rightArrow.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+    rightArrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
     rightArrow.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.next();
+      void this.next();
     });
   }
 
@@ -140,21 +140,21 @@ export class ImageView extends ItemView {
     const { KEYS } = KeyboardManager;
 
     // Navigation
-    this.keyboardManager.register(KEYS.PREV, () => this.prev());
-    this.keyboardManager.register(KEYS.PREV_ALT, () => this.prev());
-    this.keyboardManager.register(KEYS.NEXT, () => this.next());
-    this.keyboardManager.register(KEYS.NEXT_ALT, () => this.next());
-    this.keyboardManager.register(KEYS.FIRST, () => this.setIndex(0));
-    this.keyboardManager.register(KEYS.FIRST_ALT, () => this.setIndex(0));
-    this.keyboardManager.register(KEYS.LAST, () => this.setIndex(this.images.length - 1));
-    this.keyboardManager.register(KEYS.LAST_ALT, () => this.setIndex(this.images.length - 1));
+    this.keyboardManager.register(KEYS.PREV, () => { void this.prev(); });
+    this.keyboardManager.register(KEYS.PREV_ALT, () => { void this.prev(); });
+    this.keyboardManager.register(KEYS.NEXT, () => { void this.next(); });
+    this.keyboardManager.register(KEYS.NEXT_ALT, () => { void this.next(); });
+    this.keyboardManager.register(KEYS.FIRST, () => { void this.setIndex(0); });
+    this.keyboardManager.register(KEYS.FIRST_ALT, () => { void this.setIndex(0); });
+    this.keyboardManager.register(KEYS.LAST, () => { void this.setIndex(this.images.length - 1); });
+    this.keyboardManager.register(KEYS.LAST_ALT, () => { void this.setIndex(this.images.length - 1); });
 
     // View
     this.keyboardManager.register(KEYS.TOGGLE_GALLERY, () => this.toggleGallery());
     this.keyboardManager.register(KEYS.TOGGLE_INFO, () => this.toggleInfoPanel());
     this.keyboardManager.register(KEYS.TOGGLE_UI, () => this.toggleUI());
-    this.keyboardManager.register(KEYS.FULLSCREEN, () => this.toggleFullscreen());
-    this.keyboardManager.register(KEYS.FULLSCREEN_ALT, () => this.toggleFullscreen());
+    this.keyboardManager.register(KEYS.FULLSCREEN, () => { void this.toggleFullscreen(); });
+    this.keyboardManager.register(KEYS.FULLSCREEN_ALT, () => { void this.toggleFullscreen(); });
     this.keyboardManager.register(KEYS.ESCAPE, () => this.handleEscape());
 
     // Zoom
@@ -164,16 +164,16 @@ export class ImageView extends ItemView {
     this.keyboardManager.register(KEYS.RESET_ZOOM, () => this.canvas?.resetZoom());
     this.keyboardManager.register(KEYS.TOGGLE_SCROLL_MODE, () => this.canvas?.toggleScrollMode());
 
-    // Edit ([ ] for rotate, no conflict with gallery WASD)
+    // Edit
     this.keyboardManager.register(KEYS.ROTATE_CW, () => this.canvas?.rotateCW());
     this.keyboardManager.register(KEYS.ROTATE_CCW, () => this.canvas?.rotateCCW());
     this.keyboardManager.register(KEYS.FLIP_H, () => this.canvas?.flipHorizontal());
     this.keyboardManager.register(KEYS.CROP, () => this.showCrop());
 
     // File
-    this.keyboardManager.register(KEYS.RENAME, () => this.renameFile());
-    this.keyboardManager.register(KEYS.DELETE, () => this.deleteFile());
-    this.keyboardManager.register(KEYS.DELETE_PERMANENT, () => this.deleteFile(true));
+    this.keyboardManager.register(KEYS.RENAME, () => { void this.renameFile(); });
+    this.keyboardManager.register(KEYS.DELETE, () => { void this.deleteFile(); });
+    this.keyboardManager.register(KEYS.DELETE_PERMANENT, () => { void this.deleteFile(true); });
 
     // Slideshow
     this.keyboardManager.register(KEYS.TOGGLE_SLIDESHOW, () => this.toggleSlideshow());
@@ -209,7 +209,7 @@ export class ImageView extends ItemView {
     const image = this.images[this.currentIndex];
     if (!image) return;
 
-    await this.canvas?.loadImage(image);
+    this.canvas?.loadImage(image);
 
     this.toolbar?.setCounter(this.currentIndex + 1, this.images.length);
     this.updateInfoBar();
@@ -217,7 +217,7 @@ export class ImageView extends ItemView {
     this.preloadAdjacentImages();
 
     if (this.infoPanelVisible) {
-      this.updateInfoPanel();
+      void this.updateInfoPanel();
     }
   }
 
@@ -243,7 +243,8 @@ export class ImageView extends ItemView {
   private updateTitle(): void {
     const image = this.images[this.currentIndex];
     if (image) {
-      const tabHeaderEl = (this.leaf as any).tabHeaderInnerTitleEl;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tabHeaderEl = (this.leaf as any).tabHeaderInnerTitleEl as HTMLElement | undefined;
       if (tabHeaderEl) {
         tabHeaderEl.textContent = image.name;
       }
@@ -253,7 +254,7 @@ export class ImageView extends ItemView {
   private async updateInfoPanel(): Promise<void> {
     const image = this.images[this.currentIndex];
     if (!image) return;
-    const img = this.imageContainer.querySelector('img.image-viewer-canvas') as HTMLImageElement;
+    const img = this.imageContainer.querySelector('img.image-viewer-canvas') as HTMLImageElement | null;
     const dimensions = {
       width: img?.naturalWidth || 0,
       height: img?.naturalHeight || 0
@@ -295,7 +296,7 @@ export class ImageView extends ItemView {
     this.infoPanelVisible = !this.infoPanelVisible;
     this.infoPanel?.toggle();
     if (this.infoPanelVisible) {
-      this.updateInfoPanel();
+      void this.updateInfoPanel();
     }
     setTimeout(() => this.canvas?.resize(), 300);
   }
@@ -316,7 +317,7 @@ export class ImageView extends ItemView {
 
   private handleEscape(): void {
     if (document.fullscreenElement) {
-      document.exitFullscreen();
+      void document.exitFullscreen();
     } else if (this.infoPanelVisible) {
       this.toggleInfoPanel();
     } else if (this.canvas?.isZoomed()) {
@@ -334,13 +335,13 @@ export class ImageView extends ItemView {
 
     const modal = new CropModal(this.app, image);
     modal.onCrop = (result) => {
-      console.log('Crop result:', result);
+      console.debug('Crop result:', result);
     };
     modal.open();
   }
 
   toggleSlideshow(): void {
-    if (this.slideshowInterval) {
+    if (this.slideshowTimer) {
       this.stopSlideshow();
     } else {
       this.startSlideshow();
@@ -348,16 +349,16 @@ export class ImageView extends ItemView {
   }
 
   private startSlideshow(): void {
-    this.slideshowInterval = setInterval(() => {
+    this.slideshowTimer = setInterval(() => {
       if (this.settings.slideshowRandom) {
         const randomIndex = Math.floor(Math.random() * this.images.length);
-        this.setIndex(randomIndex);
+        void this.setIndex(randomIndex);
       } else {
         if (this.currentIndex === this.images.length - 1 && !this.settings.slideshowLoop) {
           this.stopSlideshow();
           return;
         }
-        this.next();
+        void this.next();
       }
     }, this.settings.slideshowInterval * 1000);
 
@@ -366,9 +367,9 @@ export class ImageView extends ItemView {
   }
 
   private stopSlideshow(): void {
-    if (this.slideshowInterval) {
-      clearInterval(this.slideshowInterval);
-      this.slideshowInterval = null;
+    if (this.slideshowTimer) {
+      clearInterval(this.slideshowTimer);
+      this.slideshowTimer = null;
     }
     this.toolbar?.setSlideshowPlaying(false);
     new Notice('Slideshow stopped');
@@ -376,16 +377,16 @@ export class ImageView extends ItemView {
 
   toggleLoop(): void {
     this.settings.loopImages = !this.settings.loopImages;
-    this.plugin.saveSettings();
+    void this.plugin.saveSettings();
     new Notice(`Loop: ${this.settings.loopImages ? 'On' : 'Off'}`);
   }
 
   cycleBackground(): void {
     const colors = ['#1a1a1a', '#2d2d2d', '#000000', '#ffffff'];
-    const currentIndex = colors.indexOf(this.settings.backgroundColor);
-    const nextIndex = (currentIndex + 1) % colors.length;
+    const currentBgIndex = colors.indexOf(this.settings.backgroundColor);
+    const nextIndex = (currentBgIndex + 1) % colors.length;
     this.settings.backgroundColor = colors[nextIndex];
-    this.plugin.saveSettings();
+    void this.plugin.saveSettings();
     this.applyTheme();
   }
 
@@ -397,7 +398,7 @@ export class ImageView extends ItemView {
 
     const newBaseName = await new Promise<string | null>((resolve) => {
       const modal = new Modal(this.app);
-      modal.titleEl.setText('Rename File');
+      modal.titleEl.setText('Rename file');
 
       let inputEl: HTMLInputElement;
       new Setting(modal.contentEl)
@@ -426,10 +427,12 @@ export class ImageView extends ItemView {
     });
 
     if (newBaseName && newBaseName !== baseName) {
-      const newPath = image.file.parent.path + '/' + newBaseName + '.' + image.extension;
-      await this.app.fileManager.renameFile(image.file, newPath);
-      new Notice('File renamed');
-      await this.loadFolder(this.currentFolder, newPath);
+      const newPath = image.file.parent?.path + '/' + newBaseName + '.' + image.extension;
+      if (newPath) {
+        await this.app.fileManager.renameFile(image.file, newPath);
+        new Notice('File renamed');
+        await this.loadFolder(this.currentFolder, newPath);
+      }
     }
   }
 
@@ -439,7 +442,7 @@ export class ImageView extends ItemView {
 
     const confirmed = await new Promise<boolean>((resolve) => {
       const modal = new Modal(this.app);
-      modal.titleEl.setText(permanent ? 'Permanently Delete?' : 'Move to Trash?');
+      modal.titleEl.setText(permanent ? 'Permanently delete?' : 'Move to trash?');
 
       const msg = permanent
         ? `"${image.name}" will be permanently deleted. This cannot be undone.`
@@ -452,7 +455,7 @@ export class ImageView extends ItemView {
           resolve(false);
         }))
         .addButton(btn => {
-          btn.setButtonText(permanent ? 'Delete' : 'Move to Trash');
+          btn.setButtonText(permanent ? 'Delete' : 'Move to trash');
           if (permanent) btn.setWarning();
           else btn.setCta();
           btn.onClick(() => {
@@ -470,7 +473,7 @@ export class ImageView extends ItemView {
       await this.app.vault.delete(image.file);
       new Notice('File permanently deleted');
     } else {
-      await this.app.vault.trash(image.file, false);
+      await this.app.fileManager.trashFile(image.file);
       new Notice('File moved to trash');
     }
 
@@ -499,7 +502,7 @@ export class ImageView extends ItemView {
 
   showHelp(): void {
     const modal = new Modal(this.app);
-    modal.titleEl.setText('Keyboard Shortcuts');
+    modal.titleEl.setText('Keyboard shortcuts');
 
     const content = modal.contentEl.createDiv({ cls: 'image-viewer-help' });
 

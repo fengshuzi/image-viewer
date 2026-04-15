@@ -14,10 +14,14 @@ export class ImageViewerSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'Image Viewer Settings' });
+    new Setting(containerEl)
+      .setName('Image viewer settings')
+      .setHeading();
 
     // Display Settings
-    containerEl.createEl('h3', { text: 'Display' });
+    new Setting(containerEl)
+      .setName('Display')
+      .setHeading();
 
     new Setting(containerEl)
       .setName('Theme')
@@ -33,7 +37,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Background Color')
+      .setName('Background color')
       .setDesc('Custom background color (hex)')
       .addText(text => text
         .setValue(this.plugin.settings.backgroundColor)
@@ -43,7 +47,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Show Toolbar')
+      .setName('Show toolbar')
       .setDesc('Display the toolbar by default')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.showToolbar)
@@ -53,7 +57,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Show File Path')
+      .setName('Show file path')
       .setDesc('Display file path in the viewer')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.showFilePath)
@@ -63,10 +67,12 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     // Gallery Settings
-    containerEl.createEl('h3', { text: 'Gallery' });
+    new Setting(containerEl)
+      .setName('Gallery')
+      .setHeading();
 
     new Setting(containerEl)
-      .setName('Thumbnail Size')
+      .setName('Thumbnail size')
       .setDesc('Size of thumbnails in pixels')
       .addSlider(slider => slider
         .setLimits(60, 200, 10)
@@ -78,7 +84,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Gallery Columns')
+      .setName('Gallery columns')
       .setDesc('Number of columns in gallery view')
       .addSlider(slider => slider
         .setLimits(3, 12, 1)
@@ -90,10 +96,12 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     // Navigation Settings
-    containerEl.createEl('h3', { text: 'Navigation' });
+    new Setting(containerEl)
+      .setName('Navigation')
+      .setHeading();
 
     new Setting(containerEl)
-      .setName('Scroll Behavior')
+      .setName('Scroll behavior')
       .setDesc('Mouse wheel behavior')
       .addDropdown(dropdown => dropdown
         .addOption('navigate', 'Navigate between images')
@@ -105,7 +113,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Loop Images')
+      .setName('Loop images')
       .setDesc('Loop back to first image after last')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.loopImages)
@@ -115,7 +123,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Sort By')
+      .setName('Sort by')
       .setDesc('Sort images by')
       .addDropdown(dropdown => dropdown
         .addOption('name', 'Name')
@@ -129,7 +137,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Sort Ascending')
+      .setName('Sort ascending')
       .setDesc('Sort in ascending order')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.sortAscending)
@@ -139,10 +147,12 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     // Slideshow Settings
-    containerEl.createEl('h3', { text: 'Slideshow' });
+    new Setting(containerEl)
+      .setName('Slideshow')
+      .setHeading();
 
     new Setting(containerEl)
-      .setName('Slideshow Interval')
+      .setName('Slideshow interval')
       .setDesc('Time between slides (seconds)')
       .addSlider(slider => slider
         .setLimits(1, 30, 1)
@@ -154,7 +164,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Loop Slideshow')
+      .setName('Loop slideshow')
       .setDesc('Loop slideshow playback')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.slideshowLoop)
@@ -164,7 +174,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Random Order')
+      .setName('Random order')
       .setDesc('Play slideshow in random order')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.slideshowRandom)
@@ -174,10 +184,12 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     // Zoom Settings
-    containerEl.createEl('h3', { text: 'Zoom' });
+    new Setting(containerEl)
+      .setName('Zoom')
+      .setHeading();
 
     new Setting(containerEl)
-      .setName('Zoom Step')
+      .setName('Zoom step')
       .setDesc('Zoom increment step')
       .addSlider(slider => slider
         .setLimits(0.1, 0.5, 0.05)
@@ -189,7 +201,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Default Zoom Mode')
+      .setName('Default zoom mode')
       .setDesc('How images fit initially')
       .addDropdown(dropdown => dropdown
         .addOption('fit', 'Fit to window')
@@ -202,10 +214,12 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     // Folder Settings
-    containerEl.createEl('h3', { text: 'Folders' });
+    new Setting(containerEl)
+      .setName('Folders')
+      .setHeading();
 
     new Setting(containerEl)
-      .setName('Default Folder')
+      .setName('Default folder')
       .setDesc('Default folder to open')
       .addText(text => text
         .setPlaceholder('assets')
@@ -216,7 +230,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Scan Subfolders')
+      .setName('Scan subfolders')
       .setDesc('Include images from subfolders')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.scanSubfolders)
@@ -227,7 +241,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
 
     // Reset button
     new Setting(containerEl)
-      .setName('Reset to Defaults')
+      .setName('Reset to defaults')
       .setDesc('Reset all settings to default values')
       .addButton(button => button
         .setButtonText('Reset')
@@ -239,8 +253,10 @@ export class ImageViewerSettingTab extends PluginSettingTab {
         }));
 
     const donateSection = containerEl.createDiv({ cls: 'plugin-donate-section' });
-    donateSection.createEl('h3', { text: '☕ 请作者喝杯咖啡' });
-    donateSection.createEl('p', { text: '如果这个插件帮助了你，欢迎请作者喝杯咖啡 ☕', cls: 'plugin-donate-desc' });
+    new Setting(donateSection)
+      .setName('Support the developer')
+      .setHeading();
+    donateSection.createEl('p', { text: '如果这个插件帮助了你，欢迎请作者喝杯咖啡', cls: 'plugin-donate-desc' });
     const imgWrap = donateSection.createDiv({ cls: 'plugin-donate-qr' });
     imgWrap.createEl('img', { attr: { src: this.plugin.app.vault.adapter.getResourcePath(`${this.plugin.manifest.dir}/assets/wechat-donate.jpg`), alt: '微信打赏', width: '160' } });
     imgWrap.createEl('p', { text: '微信扫码', cls: 'plugin-donate-label' });

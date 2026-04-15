@@ -1,4 +1,4 @@
-import { Setting, setIcon } from 'obsidian';
+import { setIcon } from 'obsidian';
 import type { ImageViewerSettings } from '../types';
 
 export interface ToolbarCallbacks {

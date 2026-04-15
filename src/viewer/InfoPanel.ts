@@ -16,7 +16,7 @@ export class InfoPanel {
     this.panelEl = wrapper.createDiv({ cls: 'image-viewer-info-panel' });
 
     const header = this.panelEl.createDiv({ cls: 'info-panel-header' });
-    header.createEl('span', { text: 'Image Info' });
+    header.createEl('span', { text: 'Image info' });
     const closeBtn = header.createEl('button', { cls: 'info-panel-close' });
     closeBtn.textContent = '\u00d7';
     closeBtn.addEventListener('click', () => this.toggle());
