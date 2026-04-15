@@ -45,7 +45,7 @@ export class CropModal extends Modal {
       'max-height': '800px'
     });
 
-    contentEl.createEl('h2', { text: 'Crop Image' });
+    contentEl.createEl('h2', { text: 'Crop image' });
 
     // Canvas container
     const canvasContainer = contentEl.createDiv({ cls: 'crop-canvas-container' });

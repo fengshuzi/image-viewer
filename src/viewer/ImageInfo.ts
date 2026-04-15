@@ -78,7 +78,7 @@ export class ImageInfoModal extends Modal {
       this.exifData = await ExifParser.parse(fileObj);
 
       if (this.hasExifData()) {
-        container.createEl('h3', { text: 'EXIF information' });
+        container.createEl('h3', { text: 'Exif information' });
 
         if (this.exifData.make || this.exifData.model) {
           this.addInfoRow(container, 'Camera',

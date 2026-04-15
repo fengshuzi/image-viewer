@@ -62,7 +62,7 @@ export class ImageView extends ItemView {
     return 'image';
   }
 
-  async onOpen(): Promise<void> {
+  onOpen(): Promise<void> {
     const { containerEl } = this;
     containerEl.addClass('image-viewer-container');
     containerEl.empty();
@@ -118,18 +118,19 @@ export class ImageView extends ItemView {
 
     this.applyTheme();
     containerEl.focus();
+    return Promise.resolve();
   }
 
   private createNavArrows(): void {
     const leftArrow = this.canvasWrapper.createDiv({ cls: 'image-viewer-nav-arrow prev' });
-    leftArrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+    setIcon(leftArrow, 'chevron-left');
     leftArrow.addEventListener('click', (e) => {
       e.stopPropagation();
       void this.prev();
     });
 
     const rightArrow = this.canvasWrapper.createDiv({ cls: 'image-viewer-nav-arrow next' });
-    rightArrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+    setIcon(rightArrow, 'chevron-right');
     rightArrow.addEventListener('click', (e) => {
       e.stopPropagation();
       void this.next();
@@ -202,10 +203,10 @@ export class ImageView extends ItemView {
 
     this.gallery?.setImages(this.images);
     this.gallery?.setCurrentIndex(this.currentIndex);
-    await this.loadCurrentImage();
+    this.loadCurrentImage();
   }
 
-  private async loadCurrentImage(): Promise<void> {
+  private loadCurrentImage(): void {
     const image = this.images[this.currentIndex];
     if (!image) return;
 
@@ -243,8 +244,8 @@ export class ImageView extends ItemView {
   private updateTitle(): void {
     const image = this.images[this.currentIndex];
     if (image) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const tabHeaderEl = (this.leaf as any).tabHeaderInnerTitleEl as HTMLElement | undefined;
+      const leafInternal = this.leaf as unknown as { tabHeaderInnerTitleEl?: HTMLElement };
+      const tabHeaderEl = leafInternal.tabHeaderInnerTitleEl;
       if (tabHeaderEl) {
         tabHeaderEl.textContent = image.name;
       }
@@ -273,7 +274,7 @@ export class ImageView extends ItemView {
 
     this.currentIndex = index;
     this.gallery?.setCurrentIndex(index);
-    await this.loadCurrentImage();
+    this.loadCurrentImage();
   }
 
   async prev(): Promise<void> {
@@ -490,7 +491,7 @@ export class ImageView extends ItemView {
 
     this.gallery?.setImages(this.images);
     this.gallery?.setCurrentIndex(this.currentIndex);
-    await this.loadCurrentImage();
+    this.loadCurrentImage();
   }
 
   showSettings(): void {
@@ -576,11 +577,12 @@ export class ImageView extends ItemView {
     this.leaf.detach();
   }
 
-  async onClose(): Promise<void> {
+  onClose(): Promise<void> {
     this.stopSlideshow();
     this.canvas?.destroy();
     this.gallery?.destroy();
     this.toolbar?.destroy();
     this.infoPanel?.destroy();
+    return Promise.resolve();
   }
 }

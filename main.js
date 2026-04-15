@@ -801,7 +801,7 @@ var InfoPanel = class {
   openFile(path) {
     const file = this.app.vault.getAbstractFileByPath(path);
     if (file) {
-      this.app.workspace.openLinkText(file.path, "", true);
+      void this.app.workspace.openLinkText(file.path, "", true);
     }
   }
   renderExif(exif) {
@@ -877,7 +877,7 @@ var CropModal = class extends import_obsidian2.Modal {
       "max-width": "1200px",
       "max-height": "800px"
     });
-    contentEl.createEl("h2", { text: "Crop Image" });
+    contentEl.createEl("h2", { text: "Crop image" });
     const canvasContainer = contentEl.createDiv({ cls: "crop-canvas-container" });
     this.canvasEl = canvasContainer.createEl("canvas");
     this.ctx = this.canvasEl.getContext("2d");
@@ -1039,7 +1039,7 @@ var ImageLoader = class {
     const ext = file.extension.toLowerCase();
     return this.settings.imageExtensions.includes(ext);
   }
-  async loadImagesFromFolder(folderPath) {
+  loadImagesFromFolder(folderPath) {
     const folder = this.app.vault.getAbstractFileByPath(folderPath);
     if (!folder || !(folder instanceof import_obsidian3.TFolder)) {
       return [];
@@ -1089,7 +1089,7 @@ var ImageLoader = class {
     }
     return sorted;
   }
-  async getImageUrl(file) {
+  getImageUrl(file) {
     return this.app.vault.getResourcePath(file);
   }
   formatFileSize(bytes) {
@@ -1108,9 +1108,7 @@ var ImageLoader = class {
       img.onerror = () => {
         resolve({ width: 0, height: 0 });
       };
-      this.getImageUrl(file).then((url) => {
-        img.src = url;
-      });
+      img.src = this.getImageUrl(file);
     });
   }
 };
@@ -1242,7 +1240,7 @@ var ImageView = class extends import_obsidian4.ItemView {
   getIcon() {
     return "image";
   }
-  async onOpen() {
+  onOpen() {
     const { containerEl } = this;
     containerEl.addClass("image-viewer-container");
     containerEl.empty();
@@ -1309,16 +1307,17 @@ var ImageView = class extends import_obsidian4.ItemView {
     });
     this.applyTheme();
     containerEl.focus();
+    return Promise.resolve();
   }
   createNavArrows() {
     const leftArrow = this.canvasWrapper.createDiv({ cls: "image-viewer-nav-arrow prev" });
-    leftArrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+    (0, import_obsidian4.setIcon)(leftArrow, "chevron-left");
     leftArrow.addEventListener("click", (e) => {
       e.stopPropagation();
       void this.prev();
     });
     const rightArrow = this.canvasWrapper.createDiv({ cls: "image-viewer-nav-arrow next" });
-    rightArrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+    (0, import_obsidian4.setIcon)(rightArrow, "chevron-right");
     rightArrow.addEventListener("click", (e) => {
       e.stopPropagation();
       void this.next();
@@ -1423,9 +1422,9 @@ var ImageView = class extends import_obsidian4.ItemView {
     }
     (_a = this.gallery) == null ? void 0 : _a.setImages(this.images);
     (_b = this.gallery) == null ? void 0 : _b.setCurrentIndex(this.currentIndex);
-    await this.loadCurrentImage();
+    this.loadCurrentImage();
   }
-  async loadCurrentImage() {
+  loadCurrentImage() {
     var _a, _b;
     const image = this.images[this.currentIndex];
     if (!image)
@@ -1462,7 +1461,8 @@ var ImageView = class extends import_obsidian4.ItemView {
   updateTitle() {
     const image = this.images[this.currentIndex];
     if (image) {
-      const tabHeaderEl = this.leaf.tabHeaderInnerTitleEl;
+      const leafInternal = this.leaf;
+      const tabHeaderEl = leafInternal.tabHeaderInnerTitleEl;
       if (tabHeaderEl) {
         tabHeaderEl.textContent = image.name;
       }
@@ -1493,7 +1493,7 @@ var ImageView = class extends import_obsidian4.ItemView {
     }
     this.currentIndex = index;
     (_a = this.gallery) == null ? void 0 : _a.setCurrentIndex(index);
-    await this.loadCurrentImage();
+    this.loadCurrentImage();
   }
   async prev() {
     await this.setIndex(this.currentIndex - 1);
@@ -1685,7 +1685,7 @@ var ImageView = class extends import_obsidian4.ItemView {
     }
     (_a = this.gallery) == null ? void 0 : _a.setImages(this.images);
     (_b = this.gallery) == null ? void 0 : _b.setCurrentIndex(this.currentIndex);
-    await this.loadCurrentImage();
+    this.loadCurrentImage();
   }
   showSettings() {
     this.app.setting.open();
@@ -1761,13 +1761,14 @@ var ImageView = class extends import_obsidian4.ItemView {
     this.stopSlideshow();
     this.leaf.detach();
   }
-  async onClose() {
+  onClose() {
     var _a, _b, _c, _d;
     this.stopSlideshow();
     (_a = this.canvas) == null ? void 0 : _a.destroy();
     (_b = this.gallery) == null ? void 0 : _b.destroy();
     (_c = this.toolbar) == null ? void 0 : _c.destroy();
     (_d = this.infoPanel) == null ? void 0 : _d.destroy();
+    return Promise.resolve();
   }
 };
 
@@ -1823,7 +1824,7 @@ var ImageViewerSettingTab = class extends import_obsidian5.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian5.Setting(containerEl).setName("Image viewer settings").setHeading();
+    new import_obsidian5.Setting(containerEl).setName("General").setHeading();
     new import_obsidian5.Setting(containerEl).setName("Display").setHeading();
     new import_obsidian5.Setting(containerEl).setName("Theme").setDesc("Color theme for the viewer").addDropdown((dropdown) => dropdown.addOption("dark", "Dark").addOption("light", "Light").addOption("system", "System").setValue(this.plugin.settings.theme).onChange(async (value) => {
       this.plugin.settings.theme = value;

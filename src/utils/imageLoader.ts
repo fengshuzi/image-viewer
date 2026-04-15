@@ -20,7 +20,7 @@ export class ImageLoader {
     return this.settings.imageExtensions.includes(ext);
   }
 
-  async loadImagesFromFolder(folderPath: string): Promise<ImageFile[]> {
+  loadImagesFromFolder(folderPath: string): ImageFile[] {
     const folder = this.app.vault.getAbstractFileByPath(folderPath);
     if (!folder || !(folder instanceof TFolder)) {
       return [];
@@ -80,7 +80,7 @@ export class ImageLoader {
     return sorted;
   }
 
-  async getImageUrl(file: TFile): Promise<string> {
+  getImageUrl(file: TFile): string {
     return this.app.vault.getResourcePath(file);
   }
 
@@ -99,9 +99,7 @@ export class ImageLoader {
       img.onerror = () => {
         resolve({ width: 0, height: 0 });
       };
-      this.getImageUrl(file).then(url => {
-        img.src = url;
-      });
+      img.src = this.getImageUrl(file);
     });
   }
 }

@@ -15,7 +15,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
-      .setName('Image viewer settings')
+      .setName('General')
       .setHeading();
 
     // Display Settings

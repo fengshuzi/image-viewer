@@ -120,7 +120,7 @@ export class InfoPanel {
   private openFile(path: string): void {
     const file = this.app.vault.getAbstractFileByPath(path);
     if (file) {
-      this.app.workspace.openLinkText(file.path, '', true);
+      void this.app.workspace.openLinkText(file.path, '', true);
     }
   }
 
