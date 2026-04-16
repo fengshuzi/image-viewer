@@ -185,9 +185,9 @@ export class ImageView extends ItemView {
     this.keyboardManager.register(KEYS.TOGGLE_BG, () => this.cycleBackground());
   }
 
-  async loadFolder(folderPath: string, initialImage?: string): Promise<void> {
+  loadFolder(folderPath: string, initialImage?: string): void {
     this.currentFolder = folderPath;
-    this.images = await this.imageLoader.loadImagesFromFolder(folderPath);
+    this.images = this.imageLoader.loadImagesFromFolder(folderPath);
 
     if (this.images.length === 0) {
       new Notice('No images found in folder');
@@ -263,7 +263,7 @@ export class ImageView extends ItemView {
     await this.infoPanel?.update(image, dimensions);
   }
 
-  async setIndex(index: number): Promise<void> {
+  setIndex(index: number): void {
     if (index < 0) {
       index = this.settings.loopImages ? this.images.length - 1 : 0;
       if (!this.settings.loopImages) return;
@@ -277,12 +277,12 @@ export class ImageView extends ItemView {
     this.loadCurrentImage();
   }
 
-  async prev(): Promise<void> {
-    await this.setIndex(this.currentIndex - 1);
+  prev(): void {
+    this.setIndex(this.currentIndex - 1);
   }
 
-  async next(): Promise<void> {
-    await this.setIndex(this.currentIndex + 1);
+  next(): void {
+    this.setIndex(this.currentIndex + 1);
   }
 
   toggleGallery(): void {
@@ -432,7 +432,7 @@ export class ImageView extends ItemView {
       if (newPath) {
         await this.app.fileManager.renameFile(image.file, newPath);
         new Notice('File renamed');
-        await this.loadFolder(this.currentFolder, newPath);
+        this.loadFolder(this.currentFolder, newPath);
       }
     }
   }

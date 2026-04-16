@@ -108,7 +108,7 @@ export default class ImageViewerPlugin extends Plugin {
     // Get view from leaf and load folder
     const view = leaf.view;
     if (view instanceof ImageView) {
-      await view.loadFolder(folderPath, initialImage);
+      view.loadFolder(folderPath, initialImage);
     }
   }
 

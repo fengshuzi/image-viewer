@@ -1406,10 +1406,10 @@ var ImageView = class extends import_obsidian4.ItemView {
     this.keyboardManager.register(KEYS.HELP, () => this.showHelp());
     this.keyboardManager.register(KEYS.TOGGLE_BG, () => this.cycleBackground());
   }
-  async loadFolder(folderPath, initialImage) {
+  loadFolder(folderPath, initialImage) {
     var _a, _b;
     this.currentFolder = folderPath;
-    this.images = await this.imageLoader.loadImagesFromFolder(folderPath);
+    this.images = this.imageLoader.loadImagesFromFolder(folderPath);
     if (this.images.length === 0) {
       new import_obsidian4.Notice("No images found in folder");
       return;
@@ -1480,7 +1480,7 @@ var ImageView = class extends import_obsidian4.ItemView {
     };
     await ((_a = this.infoPanel) == null ? void 0 : _a.update(image, dimensions));
   }
-  async setIndex(index) {
+  setIndex(index) {
     var _a;
     if (index < 0) {
       index = this.settings.loopImages ? this.images.length - 1 : 0;
@@ -1495,11 +1495,11 @@ var ImageView = class extends import_obsidian4.ItemView {
     (_a = this.gallery) == null ? void 0 : _a.setCurrentIndex(index);
     this.loadCurrentImage();
   }
-  async prev() {
-    await this.setIndex(this.currentIndex - 1);
+  prev() {
+    this.setIndex(this.currentIndex - 1);
   }
-  async next() {
-    await this.setIndex(this.currentIndex + 1);
+  next() {
+    this.setIndex(this.currentIndex + 1);
   }
   toggleGallery() {
     var _a;
@@ -1636,7 +1636,7 @@ var ImageView = class extends import_obsidian4.ItemView {
       if (newPath) {
         await this.app.fileManager.renameFile(image.file, newPath);
         new import_obsidian4.Notice("File renamed");
-        await this.loadFolder(this.currentFolder, newPath);
+        this.loadFolder(this.currentFolder, newPath);
       }
     }
   }
@@ -1824,7 +1824,6 @@ var ImageViewerSettingTab = class extends import_obsidian5.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian5.Setting(containerEl).setName("General").setHeading();
     new import_obsidian5.Setting(containerEl).setName("Display").setHeading();
     new import_obsidian5.Setting(containerEl).setName("Theme").setDesc("Color theme for the viewer").addDropdown((dropdown) => dropdown.addOption("dark", "Dark").addOption("light", "Light").addOption("system", "System").setValue(this.plugin.settings.theme).onChange(async (value) => {
       this.plugin.settings.theme = value;
@@ -1998,7 +1997,7 @@ var ImageViewerPlugin = class extends import_obsidian6.Plugin {
     });
     const view = leaf.view;
     if (view instanceof ImageView) {
-      await view.loadFolder(folderPath, initialImage);
+      view.loadFolder(folderPath, initialImage);
     }
   }
   showFolderPicker() {
