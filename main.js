@@ -1890,7 +1890,7 @@ var ImageViewerSettingTab = class extends import_obsidian5.PluginSettingTab {
       await this.plugin.saveSettings();
     }));
     new import_obsidian5.Setting(containerEl).setName("Folders").setHeading();
-    new import_obsidian5.Setting(containerEl).setName("Default folder").setDesc("Default folder to open").addText((text) => text.setPlaceholder("assets").setValue(this.plugin.settings.defaultFolder).onChange(async (value) => {
+    new import_obsidian5.Setting(containerEl).setName("Default folder").setDesc("Default folder to open").addText((text) => text.setPlaceholder("Assets").setValue(this.plugin.settings.defaultFolder).onChange(async (value) => {
       this.plugin.settings.defaultFolder = value;
       await this.plugin.saveSettings();
     }));

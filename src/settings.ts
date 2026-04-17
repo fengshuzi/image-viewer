@@ -218,7 +218,7 @@ export class ImageViewerSettingTab extends PluginSettingTab {
       .setName('Default folder')
       .setDesc('Default folder to open')
       .addText(text => text
-        .setPlaceholder('assets')
+        .setPlaceholder('Assets')
         .setValue(this.plugin.settings.defaultFolder)
         .onChange(async (value) => {
           this.plugin.settings.defaultFolder = value;
