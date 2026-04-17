@@ -154,6 +154,9 @@ var ImageCanvas = class {
     });
     this.resizeObserver.observe(this.container);
   }
+  getImageElement() {
+    return this.imageEl;
+  }
   setupImage() {
     this.imageEl.addEventListener("mousedown", this.onMouseDown.bind(this));
     document.addEventListener("mousemove", this.boundOnMouseMove);
@@ -1469,16 +1472,16 @@ var ImageView = class extends import_obsidian4.ItemView {
     }
   }
   async updateInfoPanel() {
-    var _a;
+    var _a, _b;
     const image = this.images[this.currentIndex];
     if (!image)
       return;
-    const img = this.imageContainer.querySelector("img.image-viewer-canvas");
+    const img = (_a = this.canvas) == null ? void 0 : _a.getImageElement();
     const dimensions = {
       width: (img == null ? void 0 : img.naturalWidth) || 0,
       height: (img == null ? void 0 : img.naturalHeight) || 0
     };
-    await ((_a = this.infoPanel) == null ? void 0 : _a.update(image, dimensions));
+    await ((_b = this.infoPanel) == null ? void 0 : _b.update(image, dimensions));
   }
   setIndex(index) {
     var _a;

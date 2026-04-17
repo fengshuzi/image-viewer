@@ -255,7 +255,7 @@ export class ImageView extends ItemView {
   private async updateInfoPanel(): Promise<void> {
     const image = this.images[this.currentIndex];
     if (!image) return;
-    const img = this.imageContainer.querySelector('img.image-viewer-canvas') as HTMLImageElement | null;
+    const img = this.canvas?.getImageElement();
     const dimensions = {
       width: img?.naturalWidth || 0,
       height: img?.naturalHeight || 0

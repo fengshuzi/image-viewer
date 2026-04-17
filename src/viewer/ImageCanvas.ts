@@ -22,6 +22,10 @@ export class ImageCanvas {
   onZoomChange?: (scale: number) => void;
   onNavigate?: (direction: 'prev' | 'next') => void;
 
+  getImageElement(): HTMLImageElement {
+    return this.imageEl;
+  }
+
   constructor(container: HTMLElement, settings: ImageViewerSettings) {
     this.container = container;
     this.settings = settings;
