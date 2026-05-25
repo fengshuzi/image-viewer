@@ -16,7 +16,7 @@ export class InfoPanel {
     this.panelEl = wrapper.createDiv({ cls: 'image-viewer-info-panel' });
 
     const header = this.panelEl.createDiv({ cls: 'info-panel-header' });
-    header.createEl('span', { text: 'Image info' });
+    header.createSpan({ text: 'Image info' });
     const closeBtn = header.createEl('button', { cls: 'info-panel-close' });
     closeBtn.textContent = '\u00d7';
     closeBtn.addEventListener('click', () => this.toggle());
@@ -91,7 +91,7 @@ export class InfoPanel {
       const row = this.contentEl.createDiv({ cls: 'info-panel-row' });
 
       // 创建链接列表容器
-      const linksContainer = row.createEl('div', { cls: 'info-panel-value' });
+      const linksContainer = row.createDiv({ cls: 'info-panel-value' });
 
       linkedFiles.forEach((path, index) => {
         if (index > 0) {
@@ -145,8 +145,8 @@ export class InfoPanel {
 
   private addRow(label: string, value: string): void {
     const row = this.contentEl.createDiv({ cls: 'info-panel-row' });
-    row.createEl('span', { cls: 'info-panel-label', text: label });
-    row.createEl('span', { cls: 'info-panel-value', text: value });
+    row.createSpan({ cls: 'info-panel-label', text: label });
+    row.createSpan({ cls: 'info-panel-value', text: value });
   }
 
   private formatSize(bytes: number): string {

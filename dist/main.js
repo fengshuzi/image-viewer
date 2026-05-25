@@ -145,7 +145,7 @@ var ImageCanvas = class {
     this.zoomManager = new ZoomManager(settings);
     this.boundOnMouseMove = this.onMouseMove.bind(this);
     this.boundOnMouseUp = this.onMouseUp.bind(this);
-    this.imageEl = document.createElement("img");
+    this.imageEl = container.createEl("img");
     this.imageEl.className = "image-viewer-canvas";
     this.setupImage();
     this.container.appendChild(this.imageEl);
@@ -159,8 +159,9 @@ var ImageCanvas = class {
   }
   setupImage() {
     this.imageEl.addEventListener("mousedown", this.onMouseDown.bind(this));
-    document.addEventListener("mousemove", this.boundOnMouseMove);
-    document.addEventListener("mouseup", this.boundOnMouseUp);
+    const { activeDocument } = window;
+    activeDocument.addEventListener("mousemove", this.boundOnMouseMove);
+    activeDocument.addEventListener("mouseup", this.boundOnMouseUp);
     this.container.addEventListener("wheel", this.onWheel.bind(this), { passive: false });
     this.imageEl.addEventListener("dblclick", () => this.resetZoom());
     this.imageEl.addEventListener("load", this.onImageLoad.bind(this));
@@ -206,7 +207,7 @@ var ImageCanvas = class {
         if (rect.width > 0 && rect.height > 0 || retries >= 5) {
           this.updateLayoutFromContainer();
         } else {
-          setTimeout(() => this.scheduleLayoutUpdate(retries + 1), 50);
+          activeWindow.setTimeout(() => this.scheduleLayoutUpdate(retries + 1), 50);
         }
       });
     });
@@ -358,8 +359,9 @@ var ImageCanvas = class {
     var _a;
     (_a = this.resizeObserver) == null ? void 0 : _a.disconnect();
     this.resizeObserver = null;
-    document.removeEventListener("mousemove", this.boundOnMouseMove);
-    document.removeEventListener("mouseup", this.boundOnMouseUp);
+    const { activeDocument } = window;
+    activeDocument.removeEventListener("mousemove", this.boundOnMouseMove);
+    activeDocument.removeEventListener("mouseup", this.boundOnMouseUp);
     this.imageEl.remove();
   }
 };
@@ -375,9 +377,9 @@ var Gallery = class {
     this.thumbElements = /* @__PURE__ */ new Map();
     this.container = container;
     this.settings = settings;
-    this.scrollEl = document.createElement("div");
+    this.scrollEl = container.createDiv();
     this.scrollEl.className = "image-viewer-gallery-scroll";
-    this.trackEl = document.createElement("div");
+    this.trackEl = container.createDiv();
     this.trackEl.className = "image-viewer-gallery-track";
     this.scrollEl.appendChild(this.trackEl);
     this.container.appendChild(this.scrollEl);
@@ -446,12 +448,12 @@ var Gallery = class {
   }
   createThumbnail(image, index) {
     const size = this.settings.thumbnailSize;
-    const wrapper = document.createElement("div");
+    const wrapper = this.container.createDiv();
     wrapper.className = "image-viewer-gallery-thumb" + (index === this.selectedIndex ? " selected" : "");
     wrapper.style.left = `${index * this.getThumbWidth()}px`;
     wrapper.style.width = `${size}px`;
     wrapper.style.height = `${size}px`;
-    const img = document.createElement("img");
+    const img = wrapper.createEl("img");
     img.loading = "lazy";
     img.src = image.file.vault.getResourcePath(image.file);
     img.alt = image.name;
@@ -515,9 +517,9 @@ var Toolbar = class {
     this.container = container;
     this.settings = settings;
     this.callbacks = callbacks;
-    this.counterEl = document.createElement("span");
-    this.zoomEl = document.createElement("span");
-    this.slideshowBtn = document.createElement("button");
+    this.counterEl = container.createEl("span");
+    this.zoomEl = container.createEl("span");
+    this.slideshowBtn = container.createEl("button");
     this.render();
   }
   render() {
@@ -633,10 +635,10 @@ var ExifParser = class {
       const valueOffset = entryOffset + 8;
       switch (tag) {
         case 271:
-          result.make = this.getStringValue(dataView, valueOffset, type, littleEndian);
+          result.make = this.getStringValue(dataView, valueOffset, type);
           break;
         case 272:
-          result.model = this.getStringValue(dataView, valueOffset, type, littleEndian);
+          result.model = this.getStringValue(dataView, valueOffset, type);
           break;
         case 282:
         case 283:
@@ -668,7 +670,7 @@ var ExifParser = class {
           result.iso = dataView.getUint16(valueOffset, littleEndian);
           break;
         case 36867:
-          result.dateTime = this.getStringValue(dataView, valueOffset, type, littleEndian);
+          result.dateTime = this.getStringValue(dataView, valueOffset, type);
           break;
         case 37386:
           result.focalLength = this.getRationalValue(dataView, valueOffset, littleEndian);
@@ -692,7 +694,7 @@ var ExifParser = class {
     }
     return str;
   }
-  static getStringValue(dataView, offset, type, littleEndian) {
+  static getStringValue(dataView, offset, type) {
     if (type === 2) {
       return this.getString(dataView, offset, 32);
     }
@@ -724,7 +726,7 @@ var InfoPanel = class {
     this.app = app;
     this.panelEl = wrapper.createDiv({ cls: "image-viewer-info-panel" });
     const header = this.panelEl.createDiv({ cls: "info-panel-header" });
-    header.createEl("span", { text: "Image info" });
+    header.createSpan({ text: "Image info" });
     const closeBtn = header.createEl("button", { cls: "info-panel-close" });
     closeBtn.textContent = "\xD7";
     closeBtn.addEventListener("click", () => this.toggle());
@@ -780,7 +782,7 @@ var InfoPanel = class {
     if (linkedFiles.length > 0) {
       this.addSection("Referenced In");
       const row = this.contentEl.createDiv({ cls: "info-panel-row" });
-      const linksContainer = row.createEl("div", { cls: "info-panel-value" });
+      const linksContainer = row.createDiv({ cls: "info-panel-value" });
       linkedFiles.forEach((path, index) => {
         if (index > 0) {
           linksContainer.createEl("br");
@@ -831,8 +833,8 @@ var InfoPanel = class {
   }
   addRow(label, value) {
     const row = this.contentEl.createDiv({ cls: "info-panel-row" });
-    row.createEl("span", { cls: "info-panel-label", text: label });
-    row.createEl("span", { cls: "info-panel-value", text: value });
+    row.createSpan({ cls: "info-panel-label", text: label });
+    row.createSpan({ cls: "info-panel-value", text: value });
   }
   formatSize(bytes) {
     if (bytes < 1024)
@@ -883,8 +885,9 @@ var CropModal = class extends import_obsidian2.Modal {
     this.canvasEl.addEventListener("mousedown", this.onMouseDown.bind(this));
     this.canvasEl.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvasEl.addEventListener("mouseup", this.onMouseUp.bind(this));
-    document.addEventListener("keydown", this.boundOnKeyDown);
-    document.addEventListener("keyup", this.boundOnKeyUp);
+    const { activeDocument } = window;
+    activeDocument.addEventListener("keydown", this.boundOnKeyDown);
+    activeDocument.addEventListener("keyup", this.boundOnKeyUp);
     const buttonContainer = contentEl.createDiv({ cls: "crop-buttons" });
     new import_obsidian2.Setting(buttonContainer).addButton((btn) => btn.setButtonText("Cancel").onClick(() => this.close())).addButton((btn) => btn.setButtonText("Crop").setCta().onClick(() => this.applyCrop()));
   }
@@ -1014,8 +1017,9 @@ var CropModal = class extends import_obsidian2.Modal {
     this.close();
   }
   onClose() {
-    document.removeEventListener("keydown", this.boundOnKeyDown);
-    document.removeEventListener("keyup", this.boundOnKeyUp);
+    const { activeDocument } = window;
+    activeDocument.removeEventListener("keydown", this.boundOnKeyDown);
+    activeDocument.removeEventListener("keyup", this.boundOnKeyUp);
     const { contentEl } = this;
     contentEl.empty();
   }
@@ -1514,7 +1518,8 @@ var ImageView = class extends import_obsidian4.ItemView {
     if (this.infoPanelVisible) {
       void this.updateInfoPanel();
     }
-    setTimeout(() => {
+    const { activeWindow: activeWindow2 } = window;
+    activeWindow2.setTimeout(() => {
       var _a2;
       return (_a2 = this.canvas) == null ? void 0 : _a2.resize();
     }, 300);
@@ -1526,16 +1531,18 @@ var ImageView = class extends import_obsidian4.ItemView {
     this.infoBar.style.display = this.uiVisible ? "block" : "none";
   }
   async toggleFullscreen() {
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
+    const { activeDocument } = window;
+    if (activeDocument.fullscreenElement) {
+      await activeDocument.exitFullscreen();
     } else {
       await this.containerEl.requestFullscreen();
     }
   }
   handleEscape() {
     var _a;
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
+    const { activeDocument } = window;
+    if (activeDocument.fullscreenElement) {
+      void activeDocument.exitFullscreen();
     } else if (this.infoPanelVisible) {
       this.toggleInfoPanel();
     } else if ((_a = this.canvas) == null ? void 0 : _a.isZoomed()) {
@@ -1565,7 +1572,8 @@ var ImageView = class extends import_obsidian4.ItemView {
   }
   startSlideshow() {
     var _a;
-    this.slideshowTimer = setInterval(() => {
+    const { activeWindow: activeWindow2 } = window;
+    this.slideshowTimer = activeWindow2.setInterval(() => {
       if (this.settings.slideshowRandom) {
         const randomIndex = Math.floor(Math.random() * this.images.length);
         void this.setIndex(randomIndex);
@@ -1583,7 +1591,8 @@ var ImageView = class extends import_obsidian4.ItemView {
   stopSlideshow() {
     var _a;
     if (this.slideshowTimer) {
-      clearInterval(this.slideshowTimer);
+      const { activeWindow: activeWindow2 } = window;
+      activeWindow2.clearInterval(this.slideshowTimer);
       this.slideshowTimer = null;
     }
     (_a = this.toolbar) == null ? void 0 : _a.setSlideshowPlaying(false);
@@ -1686,8 +1695,8 @@ var ImageView = class extends import_obsidian4.ItemView {
     this.loadCurrentImage();
   }
   showSettings() {
-    this.app.setting.open();
-    this.app.setting.openTabById("obsidian-image-viewer");
+    var _a;
+    (_a = this.app.internalPlugins.getPluginById("settings")) == null ? void 0 : _a.open();
   }
   showHelp() {
     const modal = new import_obsidian4.Modal(this.app);
@@ -1968,7 +1977,8 @@ var ImageViewerPlugin = class extends import_obsidian6.Plugin {
     this.addSettingTab(new ImageViewerSettingTab(this.app, this));
   }
   async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    const data = await this.loadData();
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
   }
   async saveSettings() {
     await this.saveData(this.settings);
@@ -2029,7 +2039,7 @@ var FolderSuggestModal = class extends import_obsidian6.FuzzySuggestModal {
   getItemText(folder) {
     return folder.path;
   }
-  onChooseItem(folder, evt) {
+  onChooseItem(folder, _evt) {
     this.onChoose(folder);
   }
 };

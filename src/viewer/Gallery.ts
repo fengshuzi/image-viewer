@@ -19,10 +19,10 @@ export class Gallery {
     this.container = container;
     this.settings = settings;
 
-    this.scrollEl = document.createElement('div');
+    this.scrollEl = container.createDiv();
     this.scrollEl.className = 'image-viewer-gallery-scroll';
 
-    this.trackEl = document.createElement('div');
+    this.trackEl = container.createDiv();
     this.trackEl.className = 'image-viewer-gallery-track';
 
     this.scrollEl.appendChild(this.trackEl);
@@ -107,13 +107,13 @@ export class Gallery {
 
   private createThumbnail(image: ImageFile, index: number): HTMLElement {
     const size = this.settings.thumbnailSize;
-    const wrapper = document.createElement('div');
+    const wrapper = this.container.createDiv();
     wrapper.className = 'image-viewer-gallery-thumb' + (index === this.selectedIndex ? ' selected' : '');
     wrapper.style.left = `${index * this.getThumbWidth()}px`;
     wrapper.style.width = `${size}px`;
     wrapper.style.height = `${size}px`;
 
-    const img = document.createElement('img');
+    const img = wrapper.createEl('img');
     img.loading = 'lazy';
     img.src = image.file.vault.getResourcePath(image.file);
     img.alt = image.name;

@@ -73,7 +73,8 @@ export default class ImageViewerPlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    const data = await this.loadData();
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
   }
 
   async saveSettings(): Promise<void> {
@@ -154,7 +155,7 @@ class FolderSuggestModal extends FuzzySuggestModal<TFolder> {
     return folder.path;
   }
 
-  onChooseItem(folder: TFolder, evt: MouseEvent | KeyboardEvent): void {
+  onChooseItem(folder: TFolder, _evt: MouseEvent | KeyboardEvent): void {
     this.onChoose(folder);
   }
 }

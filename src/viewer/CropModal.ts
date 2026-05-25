@@ -50,12 +50,13 @@ export class CropModal extends Modal {
     await this.loadImage();
 
     // Mouse events
-    this.canvasEl.addEventListener('mousedown', this.onMouseDown.bind(this));
-    this.canvasEl.addEventListener('mousemove', this.onMouseMove.bind(this));
+    this.canvasEl.addEventListener('mousedown', this.onMouseDown.bind(this) as (this: HTMLCanvasElement, ev: MouseEvent) => any);
+    this.canvasEl.addEventListener('mousemove', this.onMouseMove.bind(this) as (this: HTMLCanvasElement, ev: MouseEvent) => any);
     this.canvasEl.addEventListener('mouseup', this.onMouseUp.bind(this));
 
-    document.addEventListener('keydown', this.boundOnKeyDown);
-    document.addEventListener('keyup', this.boundOnKeyUp);
+    const { activeDocument } = window;
+    activeDocument.addEventListener('keydown', this.boundOnKeyDown);
+    activeDocument.addEventListener('keyup', this.boundOnKeyUp);
 
     // Buttons
     const buttonContainer = contentEl.createDiv({ cls: 'crop-buttons' });
@@ -220,8 +221,9 @@ export class CropModal extends Modal {
   }
 
   onClose(): void {
-    document.removeEventListener('keydown', this.boundOnKeyDown);
-    document.removeEventListener('keyup', this.boundOnKeyUp);
+    const { activeDocument } = window;
+    activeDocument.removeEventListener('keydown', this.boundOnKeyDown);
+    activeDocument.removeEventListener('keyup', this.boundOnKeyUp);
     const { contentEl } = this;
     contentEl.empty();
   }

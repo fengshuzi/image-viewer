@@ -33,9 +33,9 @@ export class Toolbar {
     this.container = container;
     this.settings = settings;
     this.callbacks = callbacks;
-    this.counterEl = document.createElement('span');
-    this.zoomEl = document.createElement('span');
-    this.slideshowBtn = document.createElement('button');
+    this.counterEl = container.createEl('span');
+    this.zoomEl = container.createEl('span');
+    this.slideshowBtn = container.createEl('button');
     this.render();
   }
 

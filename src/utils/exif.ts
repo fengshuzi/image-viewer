@@ -80,10 +80,10 @@ export class ExifParser {
 
       switch (tag) {
         case 0x010F: // Make
-          result.make = this.getStringValue(dataView, valueOffset, type, littleEndian);
+          result.make = this.getStringValue(dataView, valueOffset, type);
           break;
         case 0x0110: // Model
-          result.model = this.getStringValue(dataView, valueOffset, type, littleEndian);
+          result.model = this.getStringValue(dataView, valueOffset, type);
           break;
         case 0x011A: // XResolution
         case 0x011B: // YResolution
@@ -123,7 +123,7 @@ export class ExifParser {
           result.iso = dataView.getUint16(valueOffset, littleEndian);
           break;
         case 0x9003: // DateTimeOriginal
-          result.dateTime = this.getStringValue(dataView, valueOffset, type, littleEndian);
+          result.dateTime = this.getStringValue(dataView, valueOffset, type);
           break;
         case 0x920A: // FocalLength
           result.focalLength = this.getRationalValue(dataView, valueOffset, littleEndian);
@@ -151,8 +151,7 @@ export class ExifParser {
   private static getStringValue(
     dataView: DataView,
     offset: number,
-    type: number,
-    littleEndian: boolean
+    type: number
   ): string {
     if (type === 2) { // ASCII
       return this.getString(dataView, offset, 32);

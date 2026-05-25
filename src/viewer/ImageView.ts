@@ -26,7 +26,7 @@ export class ImageView extends ItemView {
   private galleryVisible: boolean = false;
   private infoPanelVisible: boolean = false;
   private uiVisible: boolean = true;
-  private slideshowTimer: ReturnType<typeof setInterval> | null = null;
+  private slideshowTimer: number | null = null;
   private isClosing: boolean = false;
 
   private mainContainer: HTMLElement;
@@ -299,7 +299,8 @@ export class ImageView extends ItemView {
     if (this.infoPanelVisible) {
       void this.updateInfoPanel();
     }
-    setTimeout(() => this.canvas?.resize(), 300);
+    const { activeWindow } = window;
+    activeWindow.setTimeout(() => this.canvas?.resize(), 300);
   }
 
   toggleUI(): void {
@@ -309,16 +310,18 @@ export class ImageView extends ItemView {
   }
 
   async toggleFullscreen(): Promise<void> {
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
+    const { activeDocument } = window;
+    if (activeDocument.fullscreenElement) {
+      await activeDocument.exitFullscreen();
     } else {
       await this.containerEl.requestFullscreen();
     }
   }
 
   private handleEscape(): void {
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
+    const { activeDocument } = window;
+    if (activeDocument.fullscreenElement) {
+      void activeDocument.exitFullscreen();
     } else if (this.infoPanelVisible) {
       this.toggleInfoPanel();
     } else if (this.canvas?.isZoomed()) {
@@ -350,7 +353,8 @@ export class ImageView extends ItemView {
   }
 
   private startSlideshow(): void {
-    this.slideshowTimer = setInterval(() => {
+    const { activeWindow } = window;
+    this.slideshowTimer = activeWindow.setInterval(() => {
       if (this.settings.slideshowRandom) {
         const randomIndex = Math.floor(Math.random() * this.images.length);
         void this.setIndex(randomIndex);
@@ -369,7 +373,8 @@ export class ImageView extends ItemView {
 
   private stopSlideshow(): void {
     if (this.slideshowTimer) {
-      clearInterval(this.slideshowTimer);
+      const { activeWindow } = window;
+      activeWindow.clearInterval(this.slideshowTimer);
       this.slideshowTimer = null;
     }
     this.toolbar?.setSlideshowPlaying(false);
@@ -495,10 +500,8 @@ export class ImageView extends ItemView {
   }
 
   showSettings(): void {
-    // @ts-ignore
-    this.app.setting.open();
-    // @ts-ignore
-    this.app.setting.openTabById('obsidian-image-viewer');
+    // @ts-expect-error - Obsidian internal API
+    this.app.internalPlugins.getPluginById('settings')?.open();
   }
 
   showHelp(): void {
