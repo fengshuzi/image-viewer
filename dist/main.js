@@ -165,7 +165,7 @@ var ImageCanvas = class {
     this.imageEl.addEventListener("dblclick", () => this.resetZoom());
     this.imageEl.addEventListener("load", this.onImageLoad.bind(this));
     this.imageEl.addEventListener("error", () => {
-      this.imageEl.setCssProps({ "opacity": "1" });
+      this.imageEl.classList.remove("fading");
       this.imageEl.alt = "Failed to load image";
     });
   }
@@ -246,7 +246,7 @@ var ImageCanvas = class {
     e.preventDefault();
     this.isDragging = true;
     this.dragStart = { x: e.clientX, y: e.clientY };
-    this.imageEl.setCssProps({ "cursor": "grabbing" });
+    this.imageEl.classList.add("grabbing");
   }
   onMouseMove(e) {
     if (!this.isDragging)
@@ -259,7 +259,7 @@ var ImageCanvas = class {
   }
   onMouseUp() {
     this.isDragging = false;
-    this.imageEl.setCssProps({ "cursor": "grab" });
+    this.imageEl.classList.remove("grabbing");
   }
   onWheel(e) {
     e.preventDefault();
@@ -874,12 +874,7 @@ var CropModal = class extends import_obsidian2.Modal {
   async onOpen() {
     const { contentEl, modalEl } = this;
     contentEl.addClass("image-viewer-crop-modal");
-    modalEl.setCssProps({
-      "width": "90vw",
-      "height": "90vh",
-      "max-width": "1200px",
-      "max-height": "800px"
-    });
+    modalEl.addClass("image-viewer-crop-modal-sizing");
     contentEl.createEl("h2", { text: "Crop image" });
     const canvasContainer = contentEl.createDiv({ cls: "crop-canvas-container" });
     this.canvasEl = canvasContainer.createEl("canvas");
@@ -1675,7 +1670,7 @@ var ImageView = class extends import_obsidian4.ItemView {
       await this.app.vault.delete(image.file);
       new import_obsidian4.Notice("File permanently deleted");
     } else {
-      await this.app.fileManager.trashFile(image.file);
+      await this.app.vault.trash(image.file, true);
       new import_obsidian4.Notice("File moved to trash");
     }
     this.images.splice(this.currentIndex, 1);

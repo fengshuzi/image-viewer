@@ -474,7 +474,7 @@ export class ImageView extends ItemView {
       await this.app.vault.delete(image.file);
       new Notice('File permanently deleted');
     } else {
-      await this.app.fileManager.trashFile(image.file);
+      await this.app.vault.trash(image.file, true);
       new Notice('File moved to trash');
     }
 

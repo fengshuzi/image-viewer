@@ -55,6 +55,10 @@
   opacity: 0;
 }
 
+.image-viewer-canvas.grabbing {
+  cursor: grabbing;
+}
+
 /* Navigation Arrows */
 .image-viewer-nav-arrow {
   position: absolute;
@@ -420,6 +424,13 @@ h4.info-panel-section:first-child {
 }
 
 /* Crop Modal */
+.image-viewer-crop-modal-sizing {
+  width: 90vw;
+  height: 90vh;
+  max-width: 1200px;
+  max-height: 800px;
+}
+
 .image-viewer-crop-modal .crop-canvas-container {
   display: flex;
   justify-content: center;

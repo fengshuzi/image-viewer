@@ -53,7 +53,7 @@ export class ImageCanvas {
     this.imageEl.addEventListener('load', this.onImageLoad.bind(this));
 
     this.imageEl.addEventListener('error', () => {
-      this.imageEl.setCssProps({ 'opacity': '1' });
+      this.imageEl.classList.remove('fading');
       this.imageEl.alt = 'Failed to load image';
     });
   }
@@ -146,7 +146,7 @@ export class ImageCanvas {
 
     this.isDragging = true;
     this.dragStart = { x: e.clientX, y: e.clientY };
-    this.imageEl.setCssProps({ 'cursor': 'grabbing' });
+    this.imageEl.classList.add('grabbing');
   }
 
   private onMouseMove(e: MouseEvent): void {
@@ -162,7 +162,7 @@ export class ImageCanvas {
 
   private onMouseUp(): void {
     this.isDragging = false;
-    this.imageEl.setCssProps({ 'cursor': 'grab' });
+    this.imageEl.classList.remove('grabbing');
   }
 
   private onWheel(e: WheelEvent): void {
