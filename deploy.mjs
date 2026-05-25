@@ -43,9 +43,9 @@ const VAULTS = [
 
 // 需要复制的文件
 const FILES_TO_COPY = [
-    { src: 'main.js', dest: 'main.js' },
-    { src: 'manifest.json', dest: 'manifest.json' },
-    { src: 'styles.css', dest: 'styles.css' }
+    { src: 'dist/main.js', dest: 'main.js' },
+    { src: 'dist/manifest.json', dest: 'manifest.json' },
+    { src: 'dist/styles.css', dest: 'styles.css' }
 ];
 
 console.log('📦 开始部署 Obsidian Image Viewer 插件到所有 vaults...\n');
@@ -81,7 +81,7 @@ VAULTS.forEach(vault => {
         const assetsTarget = join(vault.path, 'assets');
         if (!existsSync(assetsTarget)) mkdirSync(assetsTarget, { recursive: true });
         pluginAssets.forEach((fileName) => {
-            const src = join('assets', fileName);
+            const src = join('dist', 'assets', fileName);
             if (existsSync(src)) {
                 copyFileSync(src, join(assetsTarget, fileName));
                 console.log(`  ✓ 已复制 assets/${fileName}`);
