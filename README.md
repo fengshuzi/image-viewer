@@ -40,6 +40,11 @@ A powerful image viewer for Obsidian with gallery view, zoom, slideshow, EXIF di
 
 ## Installation
 
+### From Obsidian Community Plugins (Recommended)
+
+Open Obsidian Settings → Community Plugins → Browse, and search for **Image Viewer** or **fengshuzi** to install directly.
+
+
 ### From GitHub Release
 
 1. Go to [Releases](../../releases) and download `main.js`, `manifest.json`, and `styles.css`
