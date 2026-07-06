@@ -592,11 +592,33 @@ h4.info-panel-section:first-child {
     background: var(--background-secondary);
 }
 .plugin-donate-qr img {
+    width: 320px;
+    max-width: 100%;
+    height: auto;
     border-radius: 8px;
     display: block;
+    cursor: zoom-in;
 }
 .plugin-donate-label {
     font-size: 0.78rem;
     color: var(--text-muted);
     margin: 0;
+}
+
+.plugin-donate-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.82);
+    cursor: zoom-out;
+}
+.plugin-donate-lightbox-img {
+    max-width: 96vw;
+    max-height: 92vh;
+    border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
 }
