@@ -72,6 +72,17 @@
   overflow: hidden;
   position: relative;
   min-width: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-viewer-nav-arrow-container {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 68px;
+  height: 100%;
 }
 
 .image-viewer-canvas-wrapper {
@@ -109,27 +120,28 @@
   cursor: grabbing;
 }
 
-/* Navigation Arrows */
+/* Navigation Arrows - positioned outside the image */
 .image-viewer-nav-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  position: relative;
+  flex-shrink: 0;
+  align-self: center;
   width: 44px;
   height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.55);
+  background-color: rgba(255, 255, 255, 0.14);
   color: var(--iv-body-on-dark);
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.25s ease, background-color 0.2s ease, transform 0.15s ease;
+  opacity: 0.6;
+  transition: opacity 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
   z-index: 10;
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  margin: 0 12px;
 }
 
 .image-viewer-image-container:hover .image-viewer-nav-arrow {
@@ -137,20 +149,12 @@
 }
 
 .image-viewer-nav-arrow:hover {
-  background-color: rgba(0, 0, 0, 0.72);
-  transform: translateY(-50%) scale(1.05);
+  background-color: rgba(255, 255, 255, 0.28);
+  transform: scale(1.08);
 }
 
 .image-viewer-nav-arrow:active {
-  transform: translateY(-50%) scale(0.95);
-}
-
-.image-viewer-nav-arrow.prev {
-  left: 24px;
-}
-
-.image-viewer-nav-arrow.next {
-  right: 24px;
+  transform: scale(0.95);
 }
 
 .image-viewer-nav-arrow svg {

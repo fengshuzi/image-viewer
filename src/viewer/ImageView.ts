@@ -157,14 +157,16 @@ export class ImageView extends ItemView {
   }
 
   private createNavArrows(): void {
-    const leftArrow = this.canvasWrapper.createDiv({ cls: 'image-viewer-nav-arrow prev' });
+    const leftContainer = this.imageContainer.createDiv({ cls: 'image-viewer-nav-arrow-container' });
+    const leftArrow = leftContainer.createDiv({ cls: 'image-viewer-nav-arrow prev' });
     setIcon(leftArrow, 'chevron-left');
     leftArrow.addEventListener('click', (e) => {
       e.stopPropagation();
       void this.prev();
     });
 
-    const rightArrow = this.canvasWrapper.createDiv({ cls: 'image-viewer-nav-arrow next' });
+    const rightContainer = this.imageContainer.createDiv({ cls: 'image-viewer-nav-arrow-container' });
+    const rightArrow = rightContainer.createDiv({ cls: 'image-viewer-nav-arrow next' });
     setIcon(rightArrow, 'chevron-right');
     rightArrow.addEventListener('click', (e) => {
       e.stopPropagation();

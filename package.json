@@ -1,6 +1,6 @@
 {
   "name": "image-viewer",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A powerful image viewer with gallery view, zoom, slideshow and more.",
   "main": "main.js",
   "scripts": {

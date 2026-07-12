@@ -1391,13 +1391,15 @@ var ImageView = class extends import_obsidian4.ItemView {
     activeDocument.body.removeClass("image-viewer-active");
   }
   createNavArrows() {
-    const leftArrow = this.canvasWrapper.createDiv({ cls: "image-viewer-nav-arrow prev" });
+    const leftContainer = this.imageContainer.createDiv({ cls: "image-viewer-nav-arrow-container" });
+    const leftArrow = leftContainer.createDiv({ cls: "image-viewer-nav-arrow prev" });
     (0, import_obsidian4.setIcon)(leftArrow, "chevron-left");
     leftArrow.addEventListener("click", (e) => {
       e.stopPropagation();
       void this.prev();
     });
-    const rightArrow = this.canvasWrapper.createDiv({ cls: "image-viewer-nav-arrow next" });
+    const rightContainer = this.imageContainer.createDiv({ cls: "image-viewer-nav-arrow-container" });
+    const rightArrow = rightContainer.createDiv({ cls: "image-viewer-nav-arrow next" });
     (0, import_obsidian4.setIcon)(rightArrow, "chevron-right");
     rightArrow.addEventListener("click", (e) => {
       e.stopPropagation();
