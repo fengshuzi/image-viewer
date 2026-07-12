@@ -109,8 +109,23 @@
   cursor: grabbing;
 }
 
+/* Canvas wrapper always has a dark inset area behind the image */
+.image-viewer-canvas-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--iv-ink);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.image-viewer-canvas {
+  z-index: 1;
+}
+
 /* Navigation Arrows */
 .image-viewer-nav-arrow {
+  mix-blend-mode: difference;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -136,7 +151,7 @@
 }
 
 .image-viewer-nav-arrow:hover {
-  background-color: rgba(255, 255, 255, 0.28);
+  background-color: rgba(255, 255, 255, 0.45);
   transform: translateY(-50%) scale(1.05);
 }
 
