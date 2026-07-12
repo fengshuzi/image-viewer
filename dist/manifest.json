@@ -1,7 +1,7 @@
 {
 	"id": "image-viewer",
 	"name": "Image Viewer",
-	"minAppVersion": "1.2.8",
+	"minAppVersion": "1.7.2",
 	"description": "A powerful image viewer with gallery view, zoom, slideshow and more.",
 	"author": "lizhifeng",
 	"authorUrl": "https://github.com/fengshuzi",
