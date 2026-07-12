@@ -546,7 +546,6 @@ var Toolbar = class {
       "Slideshow (F5)",
       this.callbacks.onToggleSlideshow
     );
-    this.addButton(rightSection, "settings", "Settings (F4)", this.callbacks.onSettings);
     this.addButton(rightSection, "x", "Close (Esc)", this.callbacks.onClose);
   }
   addButton(container, icon, tooltip, callback) {
@@ -1311,6 +1310,7 @@ var ImageView = class extends import_obsidian4.ItemView {
     containerEl.tabIndex = 0;
     this.mainContainer = containerEl.createDiv({ cls: "image-viewer-main" });
     this.imageContainer = this.mainContainer.createDiv({ cls: "image-viewer-image-container" });
+    const leftContainer = this.imageContainer.createDiv({ cls: "image-viewer-nav-arrow-container" });
     this.canvasWrapper = this.imageContainer.createDiv({ cls: "image-viewer-canvas-wrapper" });
     this.canvas = new ImageCanvas(this.canvasWrapper, this.settings);
     this.canvas.onZoomChange = (scale) => {
@@ -1324,11 +1324,6 @@ var ImageView = class extends import_obsidian4.ItemView {
         void this.next();
     };
     this.createNavArrows();
-    this.galleryContainer = this.canvasWrapper.createDiv({ cls: "image-viewer-gallery-strip" });
-    this.gallery = new Gallery(this.galleryContainer, this.settings);
-    this.gallery.onSelect = (index) => {
-      void this.setIndex(index);
-    };
     this.toolbarContainer = this.canvasWrapper.createDiv({ cls: "image-viewer-toolbar-container" });
     this.toolbar = new Toolbar(this.toolbarContainer, this.settings, {
       onPrev: () => {
@@ -1360,10 +1355,14 @@ var ImageView = class extends import_obsidian4.ItemView {
       onToggleGallery: () => this.toggleGallery(),
       onToggleInfo: () => this.toggleInfoPanel(),
       onToggleSlideshow: () => this.toggleSlideshow(),
-      onSettings: () => this.showSettings(),
       onClose: () => this.close()
     });
     this.infoBar = this.canvasWrapper.createDiv({ cls: "image-viewer-info-bar" });
+    this.galleryContainer = this.imageContainer.createDiv({ cls: "image-viewer-gallery-strip" });
+    this.gallery = new Gallery(this.galleryContainer, this.settings);
+    this.gallery.onSelect = (index) => {
+      void this.setIndex(index);
+    };
     this.infoPanelContainer = this.imageContainer.createDiv({ cls: "image-viewer-info-panel-wrapper" });
     this.infoPanel = new InfoPanel(this.infoPanelContainer, this.app);
     this.registerDomEvent(containerEl, "keydown", (e) => {
@@ -1391,7 +1390,7 @@ var ImageView = class extends import_obsidian4.ItemView {
     activeDocument.body.removeClass("image-viewer-active");
   }
   createNavArrows() {
-    const leftContainer = this.imageContainer.createDiv({ cls: "image-viewer-nav-arrow-container" });
+    const leftContainer = this.imageContainer.querySelector(".image-viewer-nav-arrow-container");
     const leftArrow = leftContainer.createDiv({ cls: "image-viewer-nav-arrow prev" });
     (0, import_obsidian4.setIcon)(leftArrow, "chevron-left");
     leftArrow.addEventListener("click", (e) => {
@@ -1771,11 +1770,6 @@ var ImageView = class extends import_obsidian4.ItemView {
     (_a = this.gallery) == null ? void 0 : _a.setImages(this.images);
     (_b = this.gallery) == null ? void 0 : _b.setCurrentIndex(this.currentIndex);
     this.loadCurrentImage();
-  }
-  showSettings() {
-    var _a;
-    const internalPlugins = this.app.internalPlugins;
-    (_a = internalPlugins == null ? void 0 : internalPlugins.getPluginById("settings")) == null ? void 0 : _a.open();
   }
   showHelp() {
     const modal = new import_obsidian4.Modal(this.app);

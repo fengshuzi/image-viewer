@@ -12,7 +12,6 @@ export interface ToolbarCallbacks {
   onToggleGallery: () => void;
   onToggleInfo: () => void;
   onToggleSlideshow: () => void;
-  onSettings: () => void;
   onClose: () => void;
 }
 
@@ -73,7 +72,6 @@ export class Toolbar {
       this.callbacks.onToggleSlideshow
     );
 
-    this.addButton(rightSection, 'settings', 'Settings (F4)', this.callbacks.onSettings);
     this.addButton(rightSection, 'x', 'Close (Esc)', this.callbacks.onClose);
   }
 

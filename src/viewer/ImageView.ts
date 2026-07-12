@@ -90,6 +90,8 @@ export class ImageView extends ItemView {
 
     // Image area - use a canvas wrapper so we can shrink when info panel is open
     this.imageContainer = this.mainContainer.createDiv({ cls: 'image-viewer-image-container' });
+
+    const leftContainer = this.imageContainer.createDiv({ cls: 'image-viewer-nav-arrow-container' });
     this.canvasWrapper = this.imageContainer.createDiv({ cls: 'image-viewer-canvas-wrapper' });
     this.canvas = new ImageCanvas(this.canvasWrapper, this.settings);
     this.canvas.onZoomChange = (scale) => {
@@ -101,12 +103,6 @@ export class ImageView extends ItemView {
     };
 
     this.createNavArrows();
-
-    this.galleryContainer = this.canvasWrapper.createDiv({ cls: 'image-viewer-gallery-strip' });
-    this.gallery = new Gallery(this.galleryContainer, this.settings);
-    this.gallery.onSelect = (index) => {
-      void this.setIndex(index);
-    };
 
     this.toolbarContainer = this.canvasWrapper.createDiv({ cls: 'image-viewer-toolbar-container' });
     this.toolbar = new Toolbar(this.toolbarContainer, this.settings, {
@@ -120,11 +116,16 @@ export class ImageView extends ItemView {
       onToggleGallery: () => this.toggleGallery(),
       onToggleInfo: () => this.toggleInfoPanel(),
       onToggleSlideshow: () => this.toggleSlideshow(),
-      onSettings: () => this.showSettings(),
       onClose: () => this.close()
     });
 
     this.infoBar = this.canvasWrapper.createDiv({ cls: 'image-viewer-info-bar' });
+
+    this.galleryContainer = this.imageContainer.createDiv({ cls: 'image-viewer-gallery-strip' });
+    this.gallery = new Gallery(this.galleryContainer, this.settings);
+    this.gallery.onSelect = (index) => {
+      void this.setIndex(index);
+    };
 
     this.infoPanelContainer = this.imageContainer.createDiv({ cls: 'image-viewer-info-panel-wrapper' });
     this.infoPanel = new InfoPanel(this.infoPanelContainer, this.app);
@@ -157,7 +158,7 @@ export class ImageView extends ItemView {
   }
 
   private createNavArrows(): void {
-    const leftContainer = this.imageContainer.createDiv({ cls: 'image-viewer-nav-arrow-container' });
+    const leftContainer = this.imageContainer.querySelector('.image-viewer-nav-arrow-container') as HTMLElement;
     const leftArrow = leftContainer.createDiv({ cls: 'image-viewer-nav-arrow prev' });
     setIcon(leftArrow, 'chevron-left');
     leftArrow.addEventListener('click', (e) => {
@@ -531,11 +532,6 @@ export class ImageView extends ItemView {
     this.gallery?.setImages(this.images);
     this.gallery?.setCurrentIndex(this.currentIndex);
     this.loadCurrentImage();
-  }
-
-  showSettings(): void {
-    const internalPlugins = (this.app as unknown as { internalPlugins?: { getPluginById(id: string): { open(): void } | undefined } }).internalPlugins;
-    internalPlugins?.getPluginById('settings')?.open();
   }
 
   showHelp(): void {

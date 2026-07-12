@@ -164,19 +164,20 @@
 }
 
 /* ==================== */
-/* Gallery Strip (Overlay at bottom) */
+/* Gallery Strip (Fixed overlay at bottom, above toolbar) */
 /* ==================== */
 .image-viewer-gallery-strip {
-  position: absolute;
-  bottom: 0;
+  position: fixed;
+  bottom: 88px;
   left: 0;
   right: 0;
   height: 0;
   background: rgba(29, 29, 31, 0.72);
-  z-index: 15;
+  z-index: 190;
   overflow: hidden;
-  transition: height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.25s ease;
   pointer-events: none;
+  opacity: 0;
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -185,6 +186,7 @@
 .image-viewer-gallery-strip.visible {
   height: 152px;
   pointer-events: auto;
+  opacity: 1;
 }
 
 .image-viewer-gallery-scroll {
@@ -247,17 +249,19 @@
 }
 
 /* ==================== */
-/* Toolbar - Floating translucent bar */
+/* Toolbar - Floating translucent bar (fixed to viewport bottom) */
 /* ==================== */
 .image-viewer-toolbar-container {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 24px 16px 16px;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: calc(100% - 48px);
+  padding: 0;
   opacity: 0;
-  transition: opacity 0.25s ease, bottom 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  z-index: 20;
+  transition: opacity 0.25s ease;
+  z-index: 200;
   pointer-events: none;
   display: flex;
   justify-content: center;
@@ -268,16 +272,10 @@
 }
 
 .image-viewer-toolbar-container:hover,
+.image-viewer-container:hover .image-viewer-toolbar-container,
 .image-viewer-image-container:hover .image-viewer-toolbar-container {
   pointer-events: auto;
-}
-
-.image-viewer-image-container:hover .image-viewer-toolbar-container {
   opacity: 1;
-}
-
-.image-viewer-gallery-strip.visible ~ .image-viewer-toolbar-container {
-  bottom: 152px;
 }
 
 .image-viewer-toolbar {
