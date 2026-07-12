@@ -150,7 +150,7 @@ var ImageCanvas = class {
     this.setupImage();
     this.container.appendChild(this.imageEl);
     this.resizeObserver = new ResizeObserver(() => {
-      requestAnimationFrame(() => this.onContainerResize());
+      window.requestAnimationFrame(() => this.onContainerResize());
     });
     this.resizeObserver.observe(this.container);
   }
@@ -158,13 +158,13 @@ var ImageCanvas = class {
     return this.imageEl;
   }
   setupImage() {
-    this.imageEl.addEventListener("mousedown", this.onMouseDown.bind(this));
-    const { activeDocument } = window;
-    activeDocument.addEventListener("mousemove", this.boundOnMouseMove);
-    activeDocument.addEventListener("mouseup", this.boundOnMouseUp);
-    this.container.addEventListener("wheel", this.onWheel.bind(this), { passive: false });
+    this.imageEl.addEventListener("mousedown", (e) => this.onMouseDown(e));
+    const { activeDocument: activeDocument2 } = window;
+    activeDocument2.addEventListener("mousemove", this.boundOnMouseMove);
+    activeDocument2.addEventListener("mouseup", this.boundOnMouseUp);
+    this.container.addEventListener("wheel", (e) => this.onWheel(e), { passive: false });
     this.imageEl.addEventListener("dblclick", () => this.resetZoom());
-    this.imageEl.addEventListener("load", this.onImageLoad.bind(this));
+    this.imageEl.addEventListener("load", () => this.onImageLoad());
     this.imageEl.addEventListener("error", () => {
       this.imageEl.classList.remove("fading");
       this.imageEl.alt = "Failed to load image";
@@ -181,7 +181,7 @@ var ImageCanvas = class {
     this.imageEl.classList.add("fading");
     const url = this.preloadCache.get(image.path) || image.file.vault.getResourcePath(image.file);
     this.preloadCache.set(image.path, url);
-    requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
       this.imageEl.src = url;
       this.imageEl.alt = image.name;
     });
@@ -201,13 +201,13 @@ var ImageCanvas = class {
     this.scheduleLayoutUpdate();
   }
   scheduleLayoutUpdate(retries = 0) {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
         const rect = this.container.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0 || retries >= 5) {
           this.updateLayoutFromContainer();
         } else {
-          activeWindow.setTimeout(() => this.scheduleLayoutUpdate(retries + 1), 50);
+          window.setTimeout(() => this.scheduleLayoutUpdate(retries + 1), 50);
         }
       });
     });
@@ -359,9 +359,9 @@ var ImageCanvas = class {
     var _a;
     (_a = this.resizeObserver) == null ? void 0 : _a.disconnect();
     this.resizeObserver = null;
-    const { activeDocument } = window;
-    activeDocument.removeEventListener("mousemove", this.boundOnMouseMove);
-    activeDocument.removeEventListener("mouseup", this.boundOnMouseUp);
+    const { activeDocument: activeDocument2 } = window;
+    activeDocument2.removeEventListener("mousemove", this.boundOnMouseMove);
+    activeDocument2.removeEventListener("mouseup", this.boundOnMouseUp);
     this.imageEl.remove();
   }
 };
@@ -882,12 +882,12 @@ var CropModal = class extends import_obsidian2.Modal {
     this.canvasEl = canvasContainer.createEl("canvas");
     this.ctx = this.canvasEl.getContext("2d");
     await this.loadImage();
-    this.canvasEl.addEventListener("mousedown", this.onMouseDown.bind(this));
-    this.canvasEl.addEventListener("mousemove", this.onMouseMove.bind(this));
-    this.canvasEl.addEventListener("mouseup", this.onMouseUp.bind(this));
-    const { activeDocument } = window;
-    activeDocument.addEventListener("keydown", this.boundOnKeyDown);
-    activeDocument.addEventListener("keyup", this.boundOnKeyUp);
+    this.canvasEl.addEventListener("mousedown", (e) => this.onMouseDown(e));
+    this.canvasEl.addEventListener("mousemove", (e) => this.onMouseMove(e));
+    this.canvasEl.addEventListener("mouseup", () => this.onMouseUp());
+    const { activeDocument: activeDocument2 } = window;
+    activeDocument2.addEventListener("keydown", this.boundOnKeyDown);
+    activeDocument2.addEventListener("keyup", this.boundOnKeyUp);
     const buttonContainer = contentEl.createDiv({ cls: "crop-buttons" });
     new import_obsidian2.Setting(buttonContainer).addButton((btn) => btn.setButtonText("Cancel").onClick(() => this.close())).addButton((btn) => btn.setButtonText("Crop").setCta().onClick(() => this.applyCrop()));
   }
@@ -1017,9 +1017,9 @@ var CropModal = class extends import_obsidian2.Modal {
     this.close();
   }
   onClose() {
-    const { activeDocument } = window;
-    activeDocument.removeEventListener("keydown", this.boundOnKeyDown);
-    activeDocument.removeEventListener("keyup", this.boundOnKeyUp);
+    const { activeDocument: activeDocument2 } = window;
+    activeDocument2.removeEventListener("keydown", this.boundOnKeyDown);
+    activeDocument2.removeEventListener("keyup", this.boundOnKeyUp);
     const { contentEl } = this;
     contentEl.empty();
   }
@@ -1066,6 +1066,53 @@ var ImageLoader = class {
     };
     collectImages(folder);
     return this.sortImages(images);
+  }
+  countImagesInFolder(folder, includeSubfolders) {
+    let count = 0;
+    const walk = (folder2) => {
+      for (const child of folder2.children) {
+        if (child instanceof import_obsidian3.TFile && this.isImageFile(child)) {
+          count++;
+        } else if (child instanceof import_obsidian3.TFolder && includeSubfolders) {
+          walk(child);
+        }
+      }
+    };
+    walk(folder);
+    return count;
+  }
+  discoverImageFolders(exclude = [], minImageCount = 1) {
+    const result = [];
+    const normalize = (p) => p.replace(/\/+/g, "/").replace(/\/$/, "").trim().toLowerCase();
+    const excluded = new Set(exclude.map(normalize));
+    const rootPath = normalize(this.app.vault.getRoot().path);
+    excluded.add(rootPath);
+    const isExcluded = (path) => {
+      const normalized = normalize(path);
+      for (const ex of excluded) {
+        if (normalized === ex || normalized.startsWith(ex + "/")) {
+          return true;
+        }
+      }
+      return false;
+    };
+    const walk = (folder) => {
+      if (isExcluded(folder.path))
+        return;
+      const count = this.countImagesInFolder(folder, this.settings.scanSubfolders);
+      if (count >= minImageCount) {
+        result.push(folder.path);
+      }
+      if (this.settings.scanSubfolders) {
+        for (const child of folder.children) {
+          if (child instanceof import_obsidian3.TFolder) {
+            walk(child);
+          }
+        }
+      }
+    };
+    walk(this.app.vault.getRoot());
+    return result.sort((a, b) => a.localeCompare(b));
   }
   sortImages(images) {
     const sorted = [...images];
@@ -1242,6 +1289,21 @@ var ImageView = class extends import_obsidian4.ItemView {
   getIcon() {
     return "image";
   }
+  getState() {
+    const currentImage = this.images[this.currentIndex];
+    return {
+      type: VIEW_TYPE_IMAGE_VIEWER,
+      folder: this.currentFolder,
+      path: currentImage == null ? void 0 : currentImage.path
+    };
+  }
+  async setState(state, _result) {
+    if (state.folder) {
+      window.setTimeout(() => {
+        this.loadFolder(state.folder, state.path);
+      }, 0);
+    }
+  }
   onOpen() {
     const { containerEl } = this;
     containerEl.addClass("image-viewer-container");
@@ -1308,8 +1370,25 @@ var ImageView = class extends import_obsidian4.ItemView {
       this.keyboardManager.handle(e);
     });
     this.applyTheme();
+    this.hideStatusBar();
     containerEl.focus();
     return Promise.resolve();
+  }
+  hideStatusBar() {
+    var _a;
+    const parentEl = (_a = this.leaf.view.containerEl) == null ? void 0 : _a.closest(".workspace-leaf");
+    if (parentEl) {
+      parentEl.addClass("image-viewer-leaf");
+    }
+    activeDocument.body.addClass("image-viewer-active");
+  }
+  showStatusBar() {
+    var _a;
+    const parentEl = (_a = this.leaf.view.containerEl) == null ? void 0 : _a.closest(".workspace-leaf");
+    if (parentEl) {
+      parentEl.removeClass("image-viewer-leaf");
+    }
+    activeDocument.body.removeClass("image-viewer-active");
   }
   createNavArrows() {
     const leftArrow = this.canvasWrapper.createDiv({ cls: "image-viewer-nav-arrow prev" });
@@ -1518,8 +1597,7 @@ var ImageView = class extends import_obsidian4.ItemView {
     if (this.infoPanelVisible) {
       void this.updateInfoPanel();
     }
-    const { activeWindow: activeWindow2 } = window;
-    activeWindow2.setTimeout(() => {
+    window.setTimeout(() => {
       var _a2;
       return (_a2 = this.canvas) == null ? void 0 : _a2.resize();
     }, 300);
@@ -1531,18 +1609,18 @@ var ImageView = class extends import_obsidian4.ItemView {
     this.infoBar.style.display = this.uiVisible ? "block" : "none";
   }
   async toggleFullscreen() {
-    const { activeDocument } = window;
-    if (activeDocument.fullscreenElement) {
-      await activeDocument.exitFullscreen();
+    const { activeDocument: activeDocument2 } = window;
+    if (activeDocument2.fullscreenElement) {
+      await activeDocument2.exitFullscreen();
     } else {
       await this.containerEl.requestFullscreen();
     }
   }
   handleEscape() {
     var _a;
-    const { activeDocument } = window;
-    if (activeDocument.fullscreenElement) {
-      void activeDocument.exitFullscreen();
+    const { activeDocument: activeDocument2 } = window;
+    if (activeDocument2.fullscreenElement) {
+      void activeDocument2.exitFullscreen();
     } else if (this.infoPanelVisible) {
       this.toggleInfoPanel();
     } else if ((_a = this.canvas) == null ? void 0 : _a.isZoomed()) {
@@ -1572,8 +1650,7 @@ var ImageView = class extends import_obsidian4.ItemView {
   }
   startSlideshow() {
     var _a;
-    const { activeWindow: activeWindow2 } = window;
-    this.slideshowTimer = activeWindow2.setInterval(() => {
+    this.slideshowTimer = window.setInterval(() => {
       if (this.settings.slideshowRandom) {
         const randomIndex = Math.floor(Math.random() * this.images.length);
         void this.setIndex(randomIndex);
@@ -1591,8 +1668,7 @@ var ImageView = class extends import_obsidian4.ItemView {
   stopSlideshow() {
     var _a;
     if (this.slideshowTimer) {
-      const { activeWindow: activeWindow2 } = window;
-      activeWindow2.clearInterval(this.slideshowTimer);
+      window.clearInterval(this.slideshowTimer);
       this.slideshowTimer = null;
     }
     (_a = this.toolbar) == null ? void 0 : _a.setSlideshowPlaying(false);
@@ -1624,7 +1700,7 @@ var ImageView = class extends import_obsidian4.ItemView {
       new import_obsidian4.Setting(modal.contentEl).setName("New name").setDesc(`Extension .${image.extension} will be kept`).addText((text) => {
         text.setValue(baseName);
         inputEl = text.inputEl;
-        setTimeout(() => {
+        window.setTimeout(() => {
           inputEl.focus();
           inputEl.select();
         }, 50);
@@ -1676,10 +1752,10 @@ var ImageView = class extends import_obsidian4.ItemView {
     if (!confirmed)
       return;
     if (permanent) {
-      await this.app.vault.delete(image.file);
+      await this.app.fileManager.trashFile(image.file);
       new import_obsidian4.Notice("File permanently deleted");
     } else {
-      await this.app.vault.trash(image.file, true);
+      await this.app.fileManager.trashFile(image.file);
       new import_obsidian4.Notice("File moved to trash");
     }
     this.images.splice(this.currentIndex, 1);
@@ -1696,7 +1772,8 @@ var ImageView = class extends import_obsidian4.ItemView {
   }
   showSettings() {
     var _a;
-    (_a = this.app.internalPlugins.getPluginById("settings")) == null ? void 0 : _a.open();
+    const internalPlugins = this.app.internalPlugins;
+    (_a = internalPlugins == null ? void 0 : internalPlugins.getPluginById("settings")) == null ? void 0 : _a.open();
   }
   showHelp() {
     const modal = new import_obsidian4.Modal(this.app);
@@ -1771,6 +1848,7 @@ var ImageView = class extends import_obsidian4.ItemView {
   onClose() {
     var _a, _b, _c, _d;
     this.stopSlideshow();
+    this.showStatusBar();
     (_a = this.canvas) == null ? void 0 : _a.destroy();
     (_b = this.gallery) == null ? void 0 : _b.destroy();
     (_c = this.toolbar) == null ? void 0 : _c.destroy();
@@ -1800,7 +1878,9 @@ var DEFAULT_SETTINGS = {
   slideshowRandom: false,
   zoomStep: 0.25,
   defaultZoomMode: "fit",
-  defaultFolder: "assets",
+  folderMode: "auto",
+  defaultFolders: ["assets"],
+  excludeFolders: [],
   scanSubfolders: false,
   imageExtensions: [
     "jpg",
@@ -1831,6 +1911,24 @@ var ImageViewerSettingTab = class extends import_obsidian5.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
+    new import_obsidian5.Setting(containerEl).setName("Folders").setHeading();
+    new import_obsidian5.Setting(containerEl).setName("Folder mode").setDesc("Auto-discover all image folders, or use manual paths below").addDropdown((dropdown) => dropdown.addOption("auto", "Auto discover").addOption("manual", "Manual folders").setValue(this.plugin.settings.folderMode).onChange(async (value) => {
+      this.plugin.settings.folderMode = value;
+      await this.plugin.saveSettings();
+      this.display();
+    }));
+    new import_obsidian5.Setting(containerEl).setName("Default folders").setDesc("Manual folder(s) to open, comma-separated (used in Manual mode)").addText((text) => text.setPlaceholder("e.g. assets, images, photos").setValue(this.plugin.settings.defaultFolders.join(", ")).onChange(async (value) => {
+      this.plugin.settings.defaultFolders = value.split(",").map((p) => p.trim()).filter((p) => p.length > 0);
+      await this.plugin.saveSettings();
+    }));
+    new import_obsidian5.Setting(containerEl).setName("Exclude folders").setDesc("Exclude these folders from auto-discovery, comma-separated").addText((text) => text.setPlaceholder("e.g. attachments, templates").setValue(this.plugin.settings.excludeFolders.join(", ")).onChange(async (value) => {
+      this.plugin.settings.excludeFolders = value.split(",").map((p) => p.trim()).filter((p) => p.length > 0);
+      await this.plugin.saveSettings();
+    }));
+    new import_obsidian5.Setting(containerEl).setName("Scan subfolders").setDesc("Include images from subfolders when loading / discovering").addToggle((toggle) => toggle.setValue(this.plugin.settings.scanSubfolders).onChange(async (value) => {
+      this.plugin.settings.scanSubfolders = value;
+      await this.plugin.saveSettings();
+    }));
     new import_obsidian5.Setting(containerEl).setName("Display").setHeading();
     new import_obsidian5.Setting(containerEl).setName("Theme").setDesc("Color theme for the viewer").addDropdown((dropdown) => dropdown.addOption("dark", "Dark").addOption("light", "Light").addOption("system", "System").setValue(this.plugin.settings.theme).onChange(async (value) => {
       this.plugin.settings.theme = value;
@@ -1896,15 +1994,6 @@ var ImageViewerSettingTab = class extends import_obsidian5.PluginSettingTab {
       this.plugin.settings.defaultZoomMode = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian5.Setting(containerEl).setName("Folders").setHeading();
-    new import_obsidian5.Setting(containerEl).setName("Default folder").setDesc("Default folder to open").addText((text) => text.setPlaceholder("Assets").setValue(this.plugin.settings.defaultFolder).onChange(async (value) => {
-      this.plugin.settings.defaultFolder = value;
-      await this.plugin.saveSettings();
-    }));
-    new import_obsidian5.Setting(containerEl).setName("Scan subfolders").setDesc("Include images from subfolders").addToggle((toggle) => toggle.setValue(this.plugin.settings.scanSubfolders).onChange(async (value) => {
-      this.plugin.settings.scanSubfolders = value;
-      await this.plugin.saveSettings();
-    }));
     new import_obsidian5.Setting(containerEl).setName("Reset to defaults").setDesc("Reset all settings to default values").addButton((button) => button.setButtonText("Reset").setWarning().onClick(async () => {
       this.plugin.settings = { ...DEFAULT_SETTINGS };
       await this.plugin.saveSettings();
@@ -1916,7 +2005,8 @@ var ImageViewerSettingTab = class extends import_obsidian5.PluginSettingTab {
     const imgWrap = donateSection.createDiv({ cls: "plugin-donate-qr" });
     const donateImg = imgWrap.createEl("img", { attr: { src: "https://raw.githubusercontent.com/fengshuzi/images/main/wechat-donate.jpg", alt: "\u5FAE\u4FE1\u6253\u8D4F" }, cls: "plugin-donate-img" });
     donateImg.addEventListener("click", () => {
-      const overlay = document.body.createDiv({ cls: "plugin-donate-lightbox" });
+      const { activeDocument: activeDocument2 } = window;
+      const overlay = activeDocument2.body.createDiv({ cls: "plugin-donate-lightbox" });
       overlay.createEl("img", { attr: { src: "https://raw.githubusercontent.com/fengshuzi/images/main/wechat-donate.jpg", alt: "\u5FAE\u4FE1\u6253\u8D4F" }, cls: "plugin-donate-lightbox-img" });
       overlay.addEventListener("click", () => overlay.remove());
     });
@@ -1932,13 +2022,13 @@ var ImageViewerPlugin = class extends import_obsidian6.Plugin {
       return new ImageView(leaf, this);
     });
     this.addRibbonIcon("image", "Open image viewer", () => {
-      void this.openImageViewer(this.settings.defaultFolder);
+      void this.openImageViewer(this.getFirstDefaultFolder());
     });
     this.addCommand({
       id: "open",
       name: "Open",
       callback: () => {
-        void this.openImageViewer(this.settings.defaultFolder);
+        void this.openImageViewer(this.getFirstDefaultFolder());
       }
     });
     this.addCommand({
@@ -1996,6 +2086,23 @@ var ImageViewerPlugin = class extends import_obsidian6.Plugin {
   isImageFile(file) {
     const ext = file.extension.toLowerCase();
     return this.settings.imageExtensions.includes(ext);
+  }
+  getFolderPaths() {
+    var _a;
+    if (this.settings.folderMode === "auto") {
+      return this.discoverImageFolders();
+    }
+    const folders = ((_a = this.settings.defaultFolders) == null ? void 0 : _a.filter((p) => p.trim().length > 0)) || [];
+    if (folders.length > 0)
+      return folders;
+    return this.discoverImageFolders();
+  }
+  getFirstDefaultFolder() {
+    return this.getFolderPaths()[0] || "assets";
+  }
+  discoverImageFolders() {
+    const imageLoader = new ImageLoader(this.app, this.settings);
+    return imageLoader.discoverImageFolders(this.settings.excludeFolders, 1);
   }
   async openImageViewer(folderPath, initialImage) {
     const folder = this.app.vault.getAbstractFileByPath(folderPath);

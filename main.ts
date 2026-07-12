@@ -1,6 +1,7 @@
 import { Plugin, TFolder, TFile, Notice, FuzzySuggestModal, App } from 'obsidian';
 import { ImageView, VIEW_TYPE_IMAGE_VIEWER } from './src/viewer/ImageView';
 import { ImageViewerSettingTab } from './src/settings';
+import { ImageLoader } from './src/utils/imageLoader';
 import { DEFAULT_SETTINGS, type ImageViewerSettings } from './src/types';
 
 export default class ImageViewerPlugin extends Plugin {
@@ -11,19 +12,19 @@ export default class ImageViewerPlugin extends Plugin {
 
     // Register view
     this.registerView(VIEW_TYPE_IMAGE_VIEWER, (leaf) => {
-      return new ImageView(leaf, this) as unknown as import('obsidian').View;
+      return new ImageView(leaf, this);
     });
 
     // Ribbon icon
     this.addRibbonIcon('image', 'Open image viewer', () => {
-      void this.openImageViewer(this.settings.defaultFolder);
+      void this.openImageViewer(this.getFirstDefaultFolder());
     });
 
     // Commands
     this.addCommand({
       id: 'open',
       name: 'Open',
-      callback: () => { void this.openImageViewer(this.settings.defaultFolder); }
+      callback: () => { void this.openImageViewer(this.getFirstDefaultFolder()); }
     });
 
     this.addCommand({
@@ -73,7 +74,7 @@ export default class ImageViewerPlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    const data = await this.loadData();
+    const data: unknown = await this.loadData();
     this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
   }
 
@@ -89,6 +90,24 @@ export default class ImageViewerPlugin extends Plugin {
   isImageFile(file: TFile): boolean {
     const ext = file.extension.toLowerCase();
     return this.settings.imageExtensions.includes(ext);
+  }
+
+  getFolderPaths(): string[] {
+    if (this.settings.folderMode === 'auto') {
+      return this.discoverImageFolders();
+    }
+    const folders = this.settings.defaultFolders?.filter(p => p.trim().length > 0) || [];
+    if (folders.length > 0) return folders;
+    return this.discoverImageFolders();
+  }
+
+  getFirstDefaultFolder(): string {
+    return this.getFolderPaths()[0] || 'assets';
+  }
+
+  discoverImageFolders(): string[] {
+    const imageLoader = new ImageLoader(this.app, this.settings);
+    return imageLoader.discoverImageFolders(this.settings.excludeFolders, 1);
   }
 
   async openImageViewer(folderPath: string, initialImage?: string): Promise<void> {

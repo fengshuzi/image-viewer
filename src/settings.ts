@@ -14,6 +14,56 @@ export class ImageViewerSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
+    // Folder Settings
+    new Setting(containerEl)
+      .setName('Folders')
+      .setHeading();
+
+    new Setting(containerEl)
+      .setName('Folder mode')
+      .setDesc('Auto-discover all image folders, or use manual paths below')
+      .addDropdown(dropdown => dropdown
+        .addOption('auto', 'Auto discover')
+        .addOption('manual', 'Manual folders')
+        .setValue(this.plugin.settings.folderMode)
+        .onChange(async (value: 'auto' | 'manual') => {
+          this.plugin.settings.folderMode = value;
+          await this.plugin.saveSettings();
+          this.display();
+        }));
+
+    new Setting(containerEl)
+      .setName('Default folders')
+      .setDesc('Manual folder(s) to open, comma-separated (used in Manual mode)')
+      .addText(text => text
+        .setPlaceholder('e.g. assets, images, photos')
+        .setValue(this.plugin.settings.defaultFolders.join(', '))
+        .onChange(async (value) => {
+          this.plugin.settings.defaultFolders = value.split(',').map(p => p.trim()).filter(p => p.length > 0);
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Exclude folders')
+      .setDesc('Exclude these folders from auto-discovery, comma-separated')
+      .addText(text => text
+        .setPlaceholder('e.g. attachments, templates')
+        .setValue(this.plugin.settings.excludeFolders.join(', '))
+        .onChange(async (value) => {
+          this.plugin.settings.excludeFolders = value.split(',').map(p => p.trim()).filter(p => p.length > 0);
+          await this.plugin.saveSettings();
+        }));
+
+    new Setting(containerEl)
+      .setName('Scan subfolders')
+      .setDesc('Include images from subfolders when loading / discovering')
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.scanSubfolders)
+        .onChange(async (value) => {
+          this.plugin.settings.scanSubfolders = value;
+          await this.plugin.saveSettings();
+        }));
+
     // Display Settings
     new Setting(containerEl)
       .setName('Display')
@@ -209,31 +259,6 @@ export class ImageViewerSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
 
-    // Folder Settings
-    new Setting(containerEl)
-      .setName('Folders')
-      .setHeading();
-
-    new Setting(containerEl)
-      .setName('Default folder')
-      .setDesc('Default folder to open')
-      .addText(text => text
-        .setPlaceholder('Assets')
-        .setValue(this.plugin.settings.defaultFolder)
-        .onChange(async (value) => {
-          this.plugin.settings.defaultFolder = value;
-          await this.plugin.saveSettings();
-        }));
-
-    new Setting(containerEl)
-      .setName('Scan subfolders')
-      .setDesc('Include images from subfolders')
-      .addToggle(toggle => toggle
-        .setValue(this.plugin.settings.scanSubfolders)
-        .onChange(async (value) => {
-          this.plugin.settings.scanSubfolders = value;
-          await this.plugin.saveSettings();
-        }));
 
     // Reset button
     new Setting(containerEl)
@@ -256,7 +281,8 @@ export class ImageViewerSettingTab extends PluginSettingTab {
     const imgWrap = donateSection.createDiv({ cls: 'plugin-donate-qr' });
     const donateImg = imgWrap.createEl('img', { attr: { src: "https://raw.githubusercontent.com/fengshuzi/images/main/wechat-donate.jpg", alt: '微信打赏' }, cls: 'plugin-donate-img' });
     donateImg.addEventListener('click', () => {
-        const overlay = document.body.createDiv({ cls: 'plugin-donate-lightbox' });
+        const { activeDocument } = window;
+        const overlay = activeDocument.body.createDiv({ cls: 'plugin-donate-lightbox' });
         overlay.createEl('img', { attr: { src: "https://raw.githubusercontent.com/fengshuzi/images/main/wechat-donate.jpg", alt: '微信打赏' }, cls: 'plugin-donate-lightbox-img' });
         overlay.addEventListener('click', () => overlay.remove());
     });

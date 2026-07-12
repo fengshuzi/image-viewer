@@ -38,20 +38,20 @@ export class ImageCanvas {
     this.container.appendChild(this.imageEl);
 
     this.resizeObserver = new ResizeObserver(() => {
-      requestAnimationFrame(() => this.onContainerResize());
+      window.requestAnimationFrame(() => this.onContainerResize());
     });
     this.resizeObserver.observe(this.container);
   }
 
   private setupImage(): void {
-    this.imageEl.addEventListener('mousedown', this.onMouseDown.bind(this) as (this: HTMLImageElement, ev: MouseEvent) => any);
+    this.imageEl.addEventListener('mousedown', (e: MouseEvent) => this.onMouseDown(e));
     const { activeDocument } = window;
     activeDocument.addEventListener('mousemove', this.boundOnMouseMove);
     activeDocument.addEventListener('mouseup', this.boundOnMouseUp);
 
-    this.container.addEventListener('wheel', this.onWheel.bind(this) as (this: HTMLElement, ev: WheelEvent) => any, { passive: false });
+    this.container.addEventListener('wheel', (e: WheelEvent) => this.onWheel(e), { passive: false });
     this.imageEl.addEventListener('dblclick', () => this.resetZoom());
-    this.imageEl.addEventListener('load', this.onImageLoad.bind(this) as (this: HTMLImageElement, ev: Event) => any);
+    this.imageEl.addEventListener('load', () => this.onImageLoad());
 
     this.imageEl.addEventListener('error', () => {
       this.imageEl.classList.remove('fading');
@@ -74,7 +74,7 @@ export class ImageCanvas {
     const url = this.preloadCache.get(image.path) || image.file.vault.getResourcePath(image.file);
     this.preloadCache.set(image.path, url);
 
-    requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
       this.imageEl.src = url;
       this.imageEl.alt = image.name;
     });
@@ -96,13 +96,13 @@ export class ImageCanvas {
   }
 
   private scheduleLayoutUpdate(retries = 0): void {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
         const rect = this.container.getBoundingClientRect();
         if ((rect.width > 0 && rect.height > 0) || retries >= 5) {
           this.updateLayoutFromContainer();
         } else {
-          activeWindow.setTimeout(() => this.scheduleLayoutUpdate(retries + 1), 50);
+          window.setTimeout(() => this.scheduleLayoutUpdate(retries + 1), 50);
         }
       });
     });

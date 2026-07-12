@@ -62,6 +62,24 @@ export class ImageView extends ItemView {
     return 'image';
   }
 
+  getState(): { type: string; folder?: string; path?: string } {
+    const currentImage = this.images[this.currentIndex];
+    return {
+      type: VIEW_TYPE_IMAGE_VIEWER,
+      folder: this.currentFolder,
+      path: currentImage?.path
+    };
+  }
+
+  async setState(state: { type: string; folder?: string; path?: string }, _result: import('obsidian').ViewStateResult): Promise<void> {
+    if (state.folder) {
+      // Defer load until plugin data/settings are ready
+      window.setTimeout(() => {
+        this.loadFolder(state.folder!, state.path);
+      }, 0);
+    }
+  }
+
   onOpen(): Promise<void> {
     const { containerEl } = this;
     containerEl.addClass('image-viewer-container');
@@ -117,8 +135,25 @@ export class ImageView extends ItemView {
     });
 
     this.applyTheme();
+    this.hideStatusBar();
     containerEl.focus();
     return Promise.resolve();
+  }
+
+  private hideStatusBar(): void {
+    const parentEl = this.leaf.view.containerEl?.closest('.workspace-leaf');
+    if (parentEl) {
+      parentEl.addClass('image-viewer-leaf');
+    }
+    activeDocument.body.addClass('image-viewer-active');
+  }
+
+  private showStatusBar(): void {
+    const parentEl = this.leaf.view.containerEl?.closest('.workspace-leaf');
+    if (parentEl) {
+      parentEl.removeClass('image-viewer-leaf');
+    }
+    activeDocument.body.removeClass('image-viewer-active');
   }
 
   private createNavArrows(): void {
@@ -299,8 +334,7 @@ export class ImageView extends ItemView {
     if (this.infoPanelVisible) {
       void this.updateInfoPanel();
     }
-    const { activeWindow } = window;
-    activeWindow.setTimeout(() => this.canvas?.resize(), 300);
+    window.setTimeout(() => this.canvas?.resize(), 300);
   }
 
   toggleUI(): void {
@@ -353,8 +387,7 @@ export class ImageView extends ItemView {
   }
 
   private startSlideshow(): void {
-    const { activeWindow } = window;
-    this.slideshowTimer = activeWindow.setInterval(() => {
+    this.slideshowTimer = window.setInterval(() => {
       if (this.settings.slideshowRandom) {
         const randomIndex = Math.floor(Math.random() * this.images.length);
         void this.setIndex(randomIndex);
@@ -373,8 +406,7 @@ export class ImageView extends ItemView {
 
   private stopSlideshow(): void {
     if (this.slideshowTimer) {
-      const { activeWindow } = window;
-      activeWindow.clearInterval(this.slideshowTimer);
+      window.clearInterval(this.slideshowTimer);
       this.slideshowTimer = null;
     }
     this.toolbar?.setSlideshowPlaying(false);
@@ -413,7 +445,7 @@ export class ImageView extends ItemView {
         .addText(text => {
           text.setValue(baseName);
           inputEl = text.inputEl;
-          setTimeout(() => {
+          window.setTimeout(() => {
             inputEl.focus();
             inputEl.select();
           }, 50);
@@ -476,10 +508,10 @@ export class ImageView extends ItemView {
     if (!confirmed) return;
 
     if (permanent) {
-      await this.app.vault.delete(image.file);
+      await this.app.fileManager.trashFile(image.file);
       new Notice('File permanently deleted');
     } else {
-      await this.app.vault.trash(image.file, true);
+      await this.app.fileManager.trashFile(image.file);
       new Notice('File moved to trash');
     }
 
@@ -500,8 +532,8 @@ export class ImageView extends ItemView {
   }
 
   showSettings(): void {
-    // @ts-expect-error - Obsidian internal API
-    this.app.internalPlugins.getPluginById('settings')?.open();
+    const internalPlugins = (this.app as unknown as { internalPlugins?: { getPluginById(id: string): { open(): void } | undefined } }).internalPlugins;
+    internalPlugins?.getPluginById('settings')?.open();
   }
 
   showHelp(): void {
@@ -582,6 +614,7 @@ export class ImageView extends ItemView {
 
   onClose(): Promise<void> {
     this.stopSlideshow();
+    this.showStatusBar();
     this.canvas?.destroy();
     this.gallery?.destroy();
     this.toolbar?.destroy();

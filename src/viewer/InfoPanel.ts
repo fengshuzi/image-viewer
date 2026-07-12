@@ -77,7 +77,7 @@ export class InfoPanel {
     const linkedFiles: string[] = [];
 
     // 遍历所有已解析的链接
-    const resolvedLinks = this.app.metadataCache.resolvedLinks;
+    const resolvedLinks = this.app.metadataCache.resolvedLinks as Record<string, Record<string, number>>;
 
     for (const [sourcePath, links] of Object.entries(resolvedLinks)) {
       if (image.path in links) {

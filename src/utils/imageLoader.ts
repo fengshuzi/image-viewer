@@ -52,6 +52,60 @@ export class ImageLoader {
     return this.sortImages(images);
   }
 
+  countImagesInFolder(folder: TFolder, includeSubfolders: boolean): number {
+    let count = 0;
+    const walk = (folder: TFolder) => {
+      for (const child of folder.children) {
+        if (child instanceof TFile && this.isImageFile(child)) {
+          count++;
+        } else if (child instanceof TFolder && includeSubfolders) {
+          walk(child);
+        }
+      }
+    };
+    walk(folder);
+    return count;
+  }
+
+  discoverImageFolders(exclude: string[] = [], minImageCount = 1): string[] {
+    const result: string[] = [];
+
+    const normalize = (p: string) => p.replace(/\/+/g, '/').replace(/\/$/, '').trim().toLowerCase();
+    const excluded = new Set(exclude.map(normalize));
+    const rootPath = normalize(this.app.vault.getRoot().path);
+    excluded.add(rootPath);
+
+    const isExcluded = (path: string) => {
+      const normalized = normalize(path);
+      for (const ex of excluded) {
+        if (normalized === ex || normalized.startsWith(ex + '/')) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    const walk = (folder: TFolder) => {
+      if (isExcluded(folder.path)) return;
+
+      const count = this.countImagesInFolder(folder, this.settings.scanSubfolders);
+      if (count >= minImageCount) {
+        result.push(folder.path);
+      }
+
+      if (this.settings.scanSubfolders) {
+        for (const child of folder.children) {
+          if (child instanceof TFolder) {
+            walk(child);
+          }
+        }
+      }
+    };
+
+    walk(this.app.vault.getRoot());
+    return result.sort((a, b) => a.localeCompare(b));
+  }
+
   private sortImages(images: ImageFile[]): ImageFile[] {
     const sorted = [...images];
 

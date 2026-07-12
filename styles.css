@@ -187,6 +187,20 @@
   opacity: 0;
   transition: opacity 0.3s ease, bottom 0.25s ease;
   z-index: 20;
+  pointer-events: none;
+}
+
+.image-viewer-toolbar-container > * {
+  pointer-events: auto;
+}
+
+.image-viewer-toolbar-container:hover,
+.image-viewer-image-container:hover .image-viewer-toolbar-container {
+  pointer-events: auto;
+}
+
+.image-viewer-toolbar {
+  pointer-events: auto;
 }
 
 .image-viewer-gallery-strip.visible ~ .image-viewer-toolbar-container {
@@ -621,4 +635,36 @@ h4.info-panel-section:first-child {
     max-height: 92vh;
     border-radius: 12px;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Ensure toolbar is above Obsidian status bar / backlink area */
+.workspace-leaf-content .image-viewer-container {
+  position: relative;
+  z-index: 1;
+}
+
+.workspace-leaf-content .image-viewer-container .image-viewer-toolbar-container {
+  z-index: 100;
+}
+
+/* Hide Obsidian status bar / backlink area when image viewer is active */
+body.image-viewer-active .status-bar,
+.status-bar.image-viewer-hidden {
+  display: none !important;
+}
+
+body.image-viewer-active {
+  --status-bar-height: 0px;
+}
+
+body.image-viewer-active .workspace-split.mod-root .workspace-leaf-content {
+  padding-bottom: 0 !important;
+}
+
+.workspace-leaf.image-viewer-leaf .view-content {
+  padding-bottom: 0 !important;
+}
+
+.workspace-leaf.image-viewer-leaf .workspace-leaf-content {
+  padding-bottom: 0 !important;
 }

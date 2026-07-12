@@ -30,7 +30,9 @@ export interface ImageViewerSettings {
   defaultZoomMode: 'fit' | 'fill' | 'actual';
 
   // Folder settings
-  defaultFolder: string;
+  folderMode: "auto" | "manual";
+  defaultFolders: string[];
+  excludeFolders: string[];
   scanSubfolders: boolean;
   imageExtensions: string[];
 }
@@ -57,7 +59,9 @@ export const DEFAULT_SETTINGS: ImageViewerSettings = {
   zoomStep: 0.25,
   defaultZoomMode: 'fit',
 
-  defaultFolder: 'assets',
+  folderMode: 'auto',
+  defaultFolders: ['assets'],
+  excludeFolders: [],
   scanSubfolders: false,
   imageExtensions: [
     'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'ico',
@@ -93,4 +97,9 @@ export interface ZoomState {
   scale: number;
   translateX: number;
   translateY: number;
+}
+
+export interface ImageViewerState {
+  folder?: string;
+  path?: string;
 }

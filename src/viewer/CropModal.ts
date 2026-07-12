@@ -50,9 +50,9 @@ export class CropModal extends Modal {
     await this.loadImage();
 
     // Mouse events
-    this.canvasEl.addEventListener('mousedown', this.onMouseDown.bind(this) as (this: HTMLCanvasElement, ev: MouseEvent) => any);
-    this.canvasEl.addEventListener('mousemove', this.onMouseMove.bind(this) as (this: HTMLCanvasElement, ev: MouseEvent) => any);
-    this.canvasEl.addEventListener('mouseup', this.onMouseUp.bind(this));
+    this.canvasEl.addEventListener('mousedown', (e: MouseEvent) => this.onMouseDown(e));
+    this.canvasEl.addEventListener('mousemove', (e: MouseEvent) => this.onMouseMove(e));
+    this.canvasEl.addEventListener('mouseup', () => this.onMouseUp());
 
     const { activeDocument } = window;
     activeDocument.addEventListener('keydown', this.boundOnKeyDown);
