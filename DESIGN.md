@@ -219,6 +219,35 @@ interface ImageViewerSettings {
 }
 ```
 
+## 界面布局约定
+
+> 这些约定是为了防止 `styles.css` 改动影响查看器核心交互（如箭头、工具栏、画廊位置随图片缩放/平移而跳动）。
+
+主界面 DOM 顺序与定位策略：
+
+```
+.image-viewer-container
+└── .image-viewer-main
+    └── .image-viewer-image-container (flex row)
+        ├── .image-viewer-nav-arrow-container   ← 左侧上一页按钮
+        ├── .image-viewer-canvas-wrapper         ← 图片、工具栏、信息栏
+        └── .image-viewer-nav-arrow-container   ← 右侧下一页按钮
+```
+
+| UI 元素 | 定位方式 | 关键约定 |
+|---|---|---|
+| 上一页 / 下一页按钮 | 普通 flex item（在 `.image-viewer-image-container` 左右） | 不能改成绝对定位覆盖在图片上，否则会被白色/浅色图片遮住 |
+| 工具栏 | `position: fixed; bottom: 24px; z-index: 200` | 锚定视口底部，不随图片缩放/平移移动；不能用 `absolute` 或 relative to canvas |
+| 全部预览图片 / 画廊 | `position: fixed; bottom: 88px; z-index: 190` | 始终位于工具栏上方；通过 `height` + `opacity` 切换显隐，不能推开工具栏 |
+| 信息面板 | 普通 flex item，宽度 0 / 300px | 会压缩画布宽度，不能与工具栏/画廊共享定位上下文 |
+
+注意：
+
+- `.image-viewer-toolbar-container` 和 `.image-viewer-gallery-strip` 都是 **fixed 定位**，它们从 DOM 文档流中抽离，因此父容器滚动、缩放、transform 不会影响它们。
+- 调整这些元素的 `bottom`、`z-index` 或 `height` 时，必须在「未展开画廊」「展开画廊」「图片放大/平移」「窗口缩放」四种场景下验证。
+- 工具栏 hover 显示依赖 `.image-viewer-container:hover` 与 `.image-viewer-image-container:hover`，不要删除其中任一兜底选择器。
+- 不要用 `margin` / `padding` 让工具栏或画廊避开其他内容，这会破坏固定布局。
+
 ## 默认设置
 
 ```typescript
