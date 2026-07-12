@@ -90,8 +90,6 @@ export class ImageView extends ItemView {
 
     // Image area - use a canvas wrapper so we can shrink when info panel is open
     this.imageContainer = this.mainContainer.createDiv({ cls: 'image-viewer-image-container' });
-
-    const leftContainer = this.imageContainer.createDiv({ cls: 'image-viewer-nav-arrow-container' });
     this.canvasWrapper = this.imageContainer.createDiv({ cls: 'image-viewer-canvas-wrapper' });
     this.canvas = new ImageCanvas(this.canvasWrapper, this.settings);
     this.canvas.onZoomChange = (scale) => {

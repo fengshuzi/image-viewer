@@ -1310,7 +1310,6 @@ var ImageView = class extends import_obsidian4.ItemView {
     containerEl.tabIndex = 0;
     this.mainContainer = containerEl.createDiv({ cls: "image-viewer-main" });
     this.imageContainer = this.mainContainer.createDiv({ cls: "image-viewer-image-container" });
-    const leftContainer = this.imageContainer.createDiv({ cls: "image-viewer-nav-arrow-container" });
     this.canvasWrapper = this.imageContainer.createDiv({ cls: "image-viewer-canvas-wrapper" });
     this.canvas = new ImageCanvas(this.canvasWrapper, this.settings);
     this.canvas.onZoomChange = (scale) => {

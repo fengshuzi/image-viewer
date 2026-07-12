@@ -197,11 +197,11 @@
   padding: 16px 20px;
   box-sizing: border-box;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
 
 .image-viewer-gallery-scroll::-webkit-scrollbar {
   height: 6px;
+  background: transparent;
 }
 
 .image-viewer-gallery-scroll::-webkit-scrollbar-track {
@@ -708,25 +708,25 @@
 }
 
 /* Hide Obsidian status bar / backlink area when image viewer is active */
-body.image-viewer-active .status-bar,
-.status-bar.image-viewer-hidden {
-  display: none !important;
+body.image-viewer-active .app-container .status-bar,
+body.image-viewer-active .status-bar.image-viewer-hidden {
+  display: none;
 }
 
 body.image-viewer-active {
   --status-bar-height: 0px;
 }
 
-body.image-viewer-active .workspace-split.mod-root .workspace-leaf-content {
-  padding-bottom: 0 !important;
+body.image-viewer-active .workspace-split.mod-root .workspace-leaf-content.workspace-leaf-content {
+  padding-bottom: 0;
 }
 
-.workspace-leaf.image-viewer-leaf .view-content {
-  padding-bottom: 0 !important;
+.workspace-leaf.image-viewer-leaf .view-content.view-content {
+  padding-bottom: 0;
 }
 
-.workspace-leaf.image-viewer-leaf .workspace-leaf-content {
-  padding-bottom: 0 !important;
+.workspace-leaf.image-viewer-leaf .workspace-leaf-content.workspace-leaf-content {
+  padding-bottom: 0;
 }
 
 /* ==================== */

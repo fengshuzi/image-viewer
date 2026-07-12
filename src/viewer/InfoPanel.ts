@@ -77,7 +77,7 @@ export class InfoPanel {
     const linkedFiles: string[] = [];
 
     // 遍历所有已解析的链接
-    const resolvedLinks = this.app.metadataCache.resolvedLinks as Record<string, Record<string, number>>;
+    const resolvedLinks = this.app.metadataCache.resolvedLinks;
 
     for (const [sourcePath, links] of Object.entries(resolvedLinks)) {
       if (image.path in links) {
@@ -120,7 +120,7 @@ export class InfoPanel {
   private openFile(path: string): void {
     const file = this.app.vault.getAbstractFileByPath(path);
     if (file) {
-      void this.app.workspace.openLinkText(file.path, '', true);
+      void this.app.workspace.openLinkText((file as import('obsidian').TFile).path, '', true);
     }
   }
 
