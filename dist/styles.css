@@ -109,23 +109,8 @@
   cursor: grabbing;
 }
 
-/* Canvas wrapper always has a dark inset area behind the image */
-.image-viewer-canvas-wrapper::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-color: var(--iv-ink);
-  z-index: 0;
-  pointer-events: none;
-}
-
-.image-viewer-canvas {
-  z-index: 1;
-}
-
 /* Navigation Arrows */
 .image-viewer-nav-arrow {
-  mix-blend-mode: difference;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -134,7 +119,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.16);
+  background-color: rgba(0, 0, 0, 0.55);
   color: var(--iv-body-on-dark);
   border: none;
   border-radius: 50%;
@@ -144,6 +129,7 @@
   z-index: 10;
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
 
 .image-viewer-image-container:hover .image-viewer-nav-arrow {
@@ -151,7 +137,7 @@
 }
 
 .image-viewer-nav-arrow:hover {
-  background-color: rgba(255, 255, 255, 0.45);
+  background-color: rgba(0, 0, 0, 0.72);
   transform: translateY(-50%) scale(1.05);
 }
 
